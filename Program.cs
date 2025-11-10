@@ -1,46 +1,59 @@
-using Microsoft.Extensions.Configuration;
-using Microsoft.EntityFrameworkCore;
-using Clinica_Herramientas_2.Infrastructure.Adapters.Output.Persistence;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Clinica_Herramientas_2.Infrastructure.Config;
-using Clinica_Herramientas_2.Infrastructure.GUI.Auth;
-using System.Windows.Forms;
 
-namespace Clinica_Herramientas_2
+var builder = WebApplication.CreateBuilder(args);
+
+// Leer configuración
+var configuration = builder.Configuration;
+var connectionString = configuration.GetConnectionString("ClinicaDb") 
+    ?? throw new InvalidOperationException("Connection string 'ClinicaDb' not found.");
+
+// Registrar servicios de la aplicación
+builder.Services.AddClinicaServices(connectionString);
+
+// Agregar controladores
+builder.Services.AddControllers();
+
+// Configurar CORS
+builder.Services.AddCors(options =>
 {
-    internal static class Program
+    options.AddDefaultPolicy(policy =>
     {
-        public static Config Config { get; private set; }
-        
-        /// <summary>
-        ///  The main entry point for the application.
-        /// </summary>
-        [STAThread]
-        static void Main()
-        {
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
-            ApplicationConfiguration.Initialize();
-            
-            // Leer configuración
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: false)
-                .Build();
-            
-            var connectionString = configuration.GetConnectionString("ClinicaDb");
-            
-            // Configurar DbContext
-            var optionsBuilder = new DbContextOptionsBuilder<ClinicaDbContext>();
-            optionsBuilder.UseNpgsql(connectionString);
-            
-            // Crear DbContext
-            using var dbContext = new ClinicaDbContext(optionsBuilder.Options);
-            
-            // Crear Config
-            Config = new Config(dbContext);
-            
-            // Iniciar aplicación con LoginForm
-            System.Windows.Forms.Application.Run(new LoginForm(Config));
-        }
-    }
-}
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
+// Configurar Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "Clínica Herramientas 2 API",
+        Version = "v1",
+        Description = "API REST para el sistema de gestión de clínica"
+    });
+});
+
+var app = builder.Build();
+
+// Configurar el pipeline HTTP
+// Habilitar Swagger siempre (para proyecto de demostración)
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Clínica Herramientas 2 API v1");
+    c.RoutePrefix = "swagger"; // Hacer que Swagger esté disponible en /swagger
+});
+
+// Comentar UseHttpsRedirection si no tienes certificado HTTPS configurado
+// app.UseHttpsRedirection();
+app.UseCors();
+app.UseAuthorization();
+app.MapControllers();
+
+app.Run();

@@ -1,30 +1,16 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>Clinica_Herramientas_2</RootNamespace>
     <Nullable>enable</Nullable>
-    <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
     <Folder Include="Application\Adapters\Input\Builders\" />
     <Folder Include="Infrastructure\Adapters\Output\Persistence\Configurations\" />
-    <Folder Include="Infrastructure\GUI\Admin\Appointments\" />
-    <Folder Include="Infrastructure\GUI\Admin\Invoices\" />
-    <Folder Include="Infrastructure\GUI\Admin\Patients\" />
-    <Folder Include="Infrastructure\GUI\Auth\" />
-    <Folder Include="Infrastructure\GUI\Doctor\MedicalRecords\" />
-    <Folder Include="Infrastructure\GUI\Doctor\Orders\" />
-    <Folder Include="Infrastructure\GUI\Nurse\Visits\" />
-    <Folder Include="Infrastructure\GUI\RRHH\Users\" />
-    <Folder Include="Infrastructure\GUI\Support\Inventory\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Clinica-Herramientas-2.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,6 +24,11 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.10" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
 </Project>
