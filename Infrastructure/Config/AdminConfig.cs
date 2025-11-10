@@ -44,7 +44,7 @@ namespace Clinica_Herramientas_2.Infrastructure.Config
             UserPort = userPort;
             
             // Servicios
-            CreatePatientService = new CreatePatient(PatientPort);
+            CreatePatientService = new CreatePatient(PatientPort, UserPort);
             UpdatePatientService = new UpdatePatient(PatientPort);
             ViewPatientInformationService = new ViewPatientInformation(PatientPort, appointmentPort, orderPort);
             CreateAppointmentService = new CreateAppointment(AppointmentPort, PatientPort);
