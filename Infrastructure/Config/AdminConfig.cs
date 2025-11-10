@@ -13,6 +13,7 @@ namespace Clinica_Herramientas_2.Infrastructure.Config
         public IPatientPort PatientPort { get; private set; }
         public IAppointmentPort AppointmentPort { get; private set; }
         public IInvoicePort InvoicePort { get; private set; }
+        public IUserPort UserPort { get; private set; }
         
         // Servicios
         public CreatePatient CreatePatientService { get; private set; }
@@ -38,6 +39,7 @@ namespace Clinica_Herramientas_2.Infrastructure.Config
             PatientPort = patientPort;
             AppointmentPort = appointmentPort;
             InvoicePort = invoicePort;
+            UserPort = userPort;
             
             // Servicios
             CreatePatientService = new CreatePatient(PatientPort);

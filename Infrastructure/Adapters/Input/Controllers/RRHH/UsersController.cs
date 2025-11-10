@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Clinica_Herramientas_2.Application.Adapters.Input;
 using Clinica_Herramientas_2.Domain.Model;
+using Clinica_Herramientas_2.Infrastructure.Config;
+using System.Linq;
 
 namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.RRHH
 {
@@ -9,10 +11,36 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.RRHH
     public class UsersController : ControllerBase
     {
         private readonly RRHHInputs _rrhhInputs;
+        private readonly RRHHConfig _rrhhConfig;
 
-        public UsersController(RRHHInputs rrhhInputs)
+        public UsersController(RRHHInputs rrhhInputs, RRHHConfig rrhhConfig)
         {
             _rrhhInputs = rrhhInputs;
+            _rrhhConfig = rrhhConfig;
+        }
+
+        private User? GetCurrentUserFromHeaders()
+        {
+            // Intentar obtener el usuario desde los headers
+            if (Request.Headers.TryGetValue("X-User-Dni", out var dniHeader))
+            {
+                var dni = dniHeader.ToString().Trim();
+                if (!string.IsNullOrEmpty(dni))
+                {
+                    return _rrhhConfig.UserPort.FindByDocument(dni);
+                }
+            }
+            
+            if (Request.Headers.TryGetValue("X-Username", out var usernameHeader))
+            {
+                var username = usernameHeader.ToString().Trim();
+                if (!string.IsNullOrEmpty(username))
+                {
+                    return _rrhhConfig.UserPort.FindByUsername(username);
+                }
+            }
+
+            return null;
         }
 
         [HttpPost]
@@ -20,6 +48,22 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.RRHH
         {
             try
             {
+                // Obtener el usuario actual desde los headers
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                // Establecer el usuario actual en el use case
+                _rrhhInputs.SetCurrentUser(currentUser);
+
+                // Parsear el rol con validación
+                if (!Enum.TryParse<Role>(request.Role, ignoreCase: true, out var role))
+                {
+                    return BadRequest(new { message = $"Rol inválido: {request.Role}. Los roles válidos son: Admin, Doctor, Nurse, RRHH, Support." });
+                }
+
                 _rrhhInputs.CreateUser(
                     request.Fullname,
                     request.Dni,
@@ -27,7 +71,7 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.RRHH
                     request.Phonenumber,
                     DateOnly.Parse(request.Birthdate),
                     request.Address,
-                    Enum.Parse<Role>(request.Role),
+                    role,
                     request.Username,
                     request.Password
                 );
@@ -45,6 +89,22 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.RRHH
         {
             try
             {
+                // Obtener el usuario actual desde los headers
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                // Establecer el usuario actual en el use case
+                _rrhhInputs.SetCurrentUser(currentUser);
+
+                // Parsear el rol con validación
+                if (!Enum.TryParse<Role>(request.Role, ignoreCase: true, out var role))
+                {
+                    return BadRequest(new { message = $"Rol inválido: {request.Role}. Los roles válidos son: Admin, Doctor, Nurse, RRHH, Support." });
+                }
+
                 var user = _rrhhInputs.FindByUsername(request.Username ?? "");
                 if (user == null || user.Dni != dni)
                 {
@@ -56,7 +116,8 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.RRHH
                     request.Fullname,
                     request.Email,
                     request.Phonenumber,
-                    request.Address
+                    request.Address,
+                    role
                 );
 
                 return Ok(new { message = "Usuario actualizado exitosamente." });
@@ -72,6 +133,16 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.RRHH
         {
             try
             {
+                // Obtener el usuario actual desde los headers
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                // Establecer el usuario actual en el use case
+                _rrhhInputs.SetCurrentUser(currentUser);
+
                 var users = _rrhhInputs.GetAllUsers();
                 var user = users.FirstOrDefault(u => u.Dni == dni);
                 if (user == null)
@@ -94,7 +165,18 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.RRHH
             try
             {
                 var users = _rrhhInputs.GetAllUsers();
-                return Ok(users);
+                var userDtos = users.Select(u => new
+                {
+                    dni = u.Dni,
+                    username = u.Username,
+                    fullname = u.Fullname,
+                    email = u.Email,
+                    phonenumber = u.Phonenumber,
+                    birthdate = u.Birthdate.ToString("yyyy-MM-dd"),
+                    address = u.Address,
+                    role = u.Role.ToString()
+                }).ToList();
+                return Ok(userDtos);
             }
             catch (Exception ex)
             {
@@ -113,7 +195,17 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.RRHH
                     return NotFound(new { message = "Usuario no encontrado." });
                 }
 
-                return Ok(user);
+                return Ok(new
+                {
+                    dni = user.Dni,
+                    username = user.Username,
+                    fullname = user.Fullname,
+                    email = user.Email,
+                    phonenumber = user.Phonenumber,
+                    birthdate = user.Birthdate.ToString("yyyy-MM-dd"),
+                    address = user.Address,
+                    role = user.Role.ToString()
+                });
             }
             catch (Exception ex)
             {
@@ -142,6 +234,7 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.RRHH
         public string Email { get; set; } = string.Empty;
         public string Phonenumber { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
     }
 }
 

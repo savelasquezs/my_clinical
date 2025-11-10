@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Clinica_Herramientas_2.Application.Adapters.Input;
 using Clinica_Herramientas_2.Domain.Model;
+using Clinica_Herramientas_2.Infrastructure.Config;
+using System.Linq;
 
 namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Admin
 {
@@ -9,10 +11,36 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Admin
     public class PatientsController : ControllerBase
     {
         private readonly AdminInputs _adminInputs;
+        private readonly AdminConfig _adminConfig;
 
-        public PatientsController(AdminInputs adminInputs)
+        public PatientsController(AdminInputs adminInputs, AdminConfig adminConfig)
         {
             _adminInputs = adminInputs;
+            _adminConfig = adminConfig;
+        }
+
+        private User? GetCurrentUserFromHeaders()
+        {
+            // Intentar obtener el usuario desde los headers
+            if (Request.Headers.TryGetValue("X-User-Dni", out var dniHeader))
+            {
+                var dni = dniHeader.ToString().Trim();
+                if (!string.IsNullOrEmpty(dni))
+                {
+                    return _adminConfig.UserPort.FindByDocument(dni);
+                }
+            }
+            
+            if (Request.Headers.TryGetValue("X-Username", out var usernameHeader))
+            {
+                var username = usernameHeader.ToString().Trim();
+                if (!string.IsNullOrEmpty(username))
+                {
+                    return _adminConfig.UserPort.FindByUsername(username);
+                }
+            }
+
+            return null;
         }
 
         [HttpPost]
@@ -20,6 +48,16 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Admin
         {
             try
             {
+                // Obtener el usuario actual desde los headers
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                // Establecer el usuario actual en el use case
+                _adminInputs.SetCurrentUser(currentUser);
+
                 _adminInputs.CreatePatient(
                     request.Fullname,
                     request.Dni,
@@ -35,7 +73,7 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Admin
                     request.InsuranceCompanyName,
                     request.InsurancePolicyNumber,
                     request.InsuranceIsActive,
-                    DateTime.Parse(request.InsuranceExpirationDate)
+                    DateTime.SpecifyKind(DateTime.Parse(request.InsuranceExpirationDate), DateTimeKind.Utc)
                 );
 
                 return Ok(new { message = "Paciente creado exitosamente." });
@@ -51,13 +89,36 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Admin
         {
             try
             {
+                // Obtener el usuario actual desde los headers
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                // Establecer el usuario actual en el use case
+                _adminInputs.SetCurrentUser(currentUser);
+
                 var patient = _adminInputs.GetPatientByDni(dni);
                 if (patient == null)
                 {
                     return NotFound(new { message = "Paciente no encontrado." });
                 }
 
-                _adminInputs.UpdatePatient(patient, request.Email, request.Phone, request.Address);
+                _adminInputs.UpdatePatient(
+                    patient, 
+                    request.Email, 
+                    request.Phone, 
+                    request.Address,
+                    request.EmergencyFirstName,
+                    request.EmergencyLastName,
+                    request.EmergencyRelationship,
+                    request.EmergencyPhone,
+                    request.InsuranceCompanyName,
+                    request.InsurancePolicyNumber,
+                    request.InsuranceIsActive,
+                    DateTime.SpecifyKind(DateTime.Parse(request.InsuranceExpirationDate), DateTimeKind.Utc)
+                );
                 return Ok(new { message = "Paciente actualizado exitosamente." });
             }
             catch (Exception ex)
@@ -71,13 +132,51 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Admin
         {
             try
             {
+                // Obtener el usuario actual desde los headers
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                // Establecer el usuario actual en el use case
+                _adminInputs.SetCurrentUser(currentUser);
+
                 var patient = _adminInputs.GetPatientByDni(dni);
                 if (patient == null)
                 {
                     return NotFound(new { message = "Paciente no encontrado." });
                 }
 
-                return Ok(patient);
+                var patientDto = new
+                {
+                    dni = patient.Dni,
+                    fullname = patient.Fullname,
+                    email = patient.Email,
+                    phonenumber = patient.Phonenumber,
+                    birthdate = patient.Birthdate.ToString("yyyy-MM-dd"),
+                    address = patient.Address,
+                    gender = patient.Gender.ToString(),
+                    emergencyContact = patient.EmergencyContact != null ? new
+                    {
+                        firstname = patient.EmergencyContact.Firtname,
+                        lastname = patient.EmergencyContact.Lastname,
+                        relationship = patient.EmergencyContact.Relationship,
+                        phoneNumber = patient.EmergencyContact.PhoneNumber
+                    } : null,
+                    insurance = patient.Insurance != null ? new
+                    {
+                        companyName = patient.Insurance.CompanyName,
+                        policyNumber = patient.Insurance.PolicyNumber,
+                        isActive = patient.Insurance.IsActive,
+                        expirationDate = patient.Insurance.ExpirationDate
+                    } : null,
+                    appointments = patient.Appointments,
+                    medicalRecords = patient.MedicalRecords,
+                    nurseVisits = patient.NurseVisits,
+                    invoices = patient.Invoices
+                };
+                return Ok(patientDto);
             }
             catch (Exception ex)
             {
@@ -90,8 +189,46 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Admin
         {
             try
             {
+                // Obtener el usuario actual desde los headers
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                // Establecer el usuario actual en el use case
+                _adminInputs.SetCurrentUser(currentUser);
+
                 var patients = _adminInputs.GetAllPatients();
-                return Ok(patients);
+                var patientDtos = patients.Select(p => new
+                {
+                    dni = p.Dni,
+                    fullname = p.Fullname,
+                    email = p.Email,
+                    phonenumber = p.Phonenumber,
+                    birthdate = p.Birthdate.ToString("yyyy-MM-dd"),
+                    address = p.Address,
+                    gender = p.Gender.ToString(),
+                    emergencyContact = p.EmergencyContact != null ? new
+                    {
+                        firstname = p.EmergencyContact.Firtname,
+                        lastname = p.EmergencyContact.Lastname,
+                        relationship = p.EmergencyContact.Relationship,
+                        phoneNumber = p.EmergencyContact.PhoneNumber
+                    } : null,
+                    insurance = p.Insurance != null ? new
+                    {
+                        companyName = p.Insurance.CompanyName,
+                        policyNumber = p.Insurance.PolicyNumber,
+                        isActive = p.Insurance.IsActive,
+                        expirationDate = p.Insurance.ExpirationDate
+                    } : null,
+                    appointments = p.Appointments,
+                    medicalRecords = p.MedicalRecords,
+                    nurseVisits = p.NurseVisits,
+                    invoices = p.Invoices
+                }).ToList();
+                return Ok(patientDtos);
             }
             catch (Exception ex)
             {
@@ -124,6 +261,14 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Admin
         public string Email { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
+        public string EmergencyFirstName { get; set; } = string.Empty;
+        public string EmergencyLastName { get; set; } = string.Empty;
+        public string EmergencyRelationship { get; set; } = string.Empty;
+        public string EmergencyPhone { get; set; } = string.Empty;
+        public string InsuranceCompanyName { get; set; } = string.Empty;
+        public string InsurancePolicyNumber { get; set; } = string.Empty;
+        public bool InsuranceIsActive { get; set; }
+        public string InsuranceExpirationDate { get; set; } = string.Empty;
     }
 }
 

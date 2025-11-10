@@ -77,5 +77,10 @@ namespace Clinica_Herramientas_2.Application.Adapters.Input
         {
             return doctorUseCase.GetAllPatients();
         }
+        
+        public void SetCurrentUser(User user)
+        {
+            doctorUseCase.SetCurrentUser(user);
+        }
     }
 }

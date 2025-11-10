@@ -51,5 +51,10 @@ namespace Clinica_Herramientas_2.Application.Adapters.Input
         {
             return nurseUseCase.GetPatientOrders(patientDni);
         }
+        
+        public void SetCurrentUser(User user)
+        {
+            nurseUseCase.SetCurrentUser(user);
+        }
     }
 }

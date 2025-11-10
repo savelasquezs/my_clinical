@@ -49,7 +49,7 @@ namespace Clinica_Herramientas_2.Application.UseCases
             createUser.Create(this.CurrentUser, newUser);
         }
 
-        public void UpdateExistingUser(User userToUpdate, string fullname, string email, string phonenumber, string address)
+        public void UpdateExistingUser(User userToUpdate, string fullname, string email, string phonenumber, string address, Role role)
         {
             if (this.CurrentUser == null)
             {
@@ -60,6 +60,7 @@ namespace Clinica_Herramientas_2.Application.UseCases
             userToUpdate.SetEmail(email);
             userToUpdate.SetPhone(phonenumber);
             userToUpdate.SetAddress(address);
+            userToUpdate.SetRole(role);
             
             updateUser.Update(this.CurrentUser, userToUpdate);
         }

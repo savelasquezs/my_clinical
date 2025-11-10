@@ -39,21 +39,19 @@ namespace Clinica_Herramientas_2.Application.UseCases
             this.CurrentUser = user;
         }
 
-        public void CreateNewPatient(string fullname, string dni, string email, string phonenumber, DateOnly birthdate, string address, Gender gender, string emergencyFirstName, string emergencyLastName, string emergencyRelationship, string emergencyPhone, string insuranceCompanyName, string insurancePolicyNumber, bool insuranceIsActive, DateTime insuranceExpirationDate)
+        public void CreateNewPatient(Patient patient)
         {
             if (this.CurrentUser == null)
             {
                 throw new Exception("Debe establecer un usuario administrativo válido");
             }
 
-            var emergencyContact = new EmergencyContact(emergencyFirstName, emergencyLastName, emergencyRelationship, emergencyPhone);
-            var healthInsurance = new HealthInsurance(insuranceCompanyName, insurancePolicyNumber, insuranceIsActive, insuranceExpirationDate);
-            var patient = new Patient(fullname, dni, email, phonenumber, birthdate, address, gender, emergencyContact, healthInsurance);
-
             createPatient.Create(this.CurrentUser, patient);
         }
 
-        public void UpdateExistingPatient(Patient patient, string email, string phone, string address)
+        public void UpdateExistingPatient(Patient patient, string email, string phone, string address, 
+            string emergencyFirstName, string emergencyLastName, string emergencyRelationship, string emergencyPhone,
+            string insuranceCompanyName, string insurancePolicyNumber, bool insuranceIsActive, DateTime insuranceExpirationDate)
         {
             if (this.CurrentUser == null)
             {
@@ -64,6 +62,8 @@ namespace Clinica_Herramientas_2.Application.UseCases
             patient.SetEmail(email);
             patient.SetPhone(phone);
             patient.SetAddress(address);
+            patient.UpdateEmergencyContact(emergencyFirstName, emergencyLastName, emergencyRelationship, emergencyPhone);
+            patient.UpdateInsurance(insuranceCompanyName, insurancePolicyNumber, insuranceIsActive, insuranceExpirationDate);
 
             updatePatient.Update(this.CurrentUser, patient);
         }

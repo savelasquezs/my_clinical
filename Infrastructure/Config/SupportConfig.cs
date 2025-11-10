@@ -14,6 +14,7 @@ namespace Clinica_Herramientas_2.Infrastructure.Config
         public IProcedurePort ProcedurePort { get; private set; }
         public IDiagnosticAidPort DiagnosticAidPort { get; private set; }
         public IInventoryPort InventoryPort { get; private set; }
+        public IUserPort UserPort { get; private set; }
         
         // Servicios
         public ManageInventory ManageInventoryService { get; private set; }
@@ -28,13 +29,14 @@ namespace Clinica_Herramientas_2.Infrastructure.Config
         // Input
         public SupportInputs SupportInputs { get; private set; }
         
-        public SupportConfig(IMedicationPort medicationPort, IProcedurePort procedurePort, IDiagnosticAidPort diagnosticAidPort, IInventoryPort inventoryPort)
+        public SupportConfig(IMedicationPort medicationPort, IProcedurePort procedurePort, IDiagnosticAidPort diagnosticAidPort, IInventoryPort inventoryPort, IUserPort userPort)
         {
             // Puertos
             MedicationPort = medicationPort;
             ProcedurePort = procedurePort;
             DiagnosticAidPort = diagnosticAidPort;
             InventoryPort = inventoryPort;
+            UserPort = userPort;
             
             // Servicios
             ManageInventoryService = new ManageInventory(MedicationPort, ProcedurePort, DiagnosticAidPort);

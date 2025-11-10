@@ -66,5 +66,10 @@ namespace Clinica_Herramientas_2.Application.Adapters.Input
         {
             return supportUseCase.GetAllDiagnosticAids();
         }
+        
+        public void SetCurrentUser(User user)
+        {
+            supportUseCase.SetCurrentUser(user);
+        }
     }
 }

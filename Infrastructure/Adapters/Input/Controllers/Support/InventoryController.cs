@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Clinica_Herramientas_2.Application.Adapters.Input;
+using Clinica_Herramientas_2.Domain.Model;
+using Clinica_Herramientas_2.Infrastructure.Config;
 
 namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Support
 {
@@ -8,10 +10,36 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Suppo
     public class InventoryController : ControllerBase
     {
         private readonly SupportInputs _supportInputs;
+        private readonly SupportConfig _supportConfig;
 
-        public InventoryController(SupportInputs supportInputs)
+        public InventoryController(SupportInputs supportInputs, SupportConfig supportConfig)
         {
             _supportInputs = supportInputs;
+            _supportConfig = supportConfig;
+        }
+
+        private User? GetCurrentUserFromHeaders()
+        {
+            // Intentar obtener el usuario desde los headers
+            if (Request.Headers.TryGetValue("X-User-Dni", out var dniHeader))
+            {
+                var dni = dniHeader.ToString().Trim();
+                if (!string.IsNullOrEmpty(dni))
+                {
+                    return _supportConfig.UserPort.FindByDocument(dni);
+                }
+            }
+            
+            if (Request.Headers.TryGetValue("X-Username", out var usernameHeader))
+            {
+                var username = usernameHeader.ToString().Trim();
+                if (!string.IsNullOrEmpty(username))
+                {
+                    return _supportConfig.UserPort.FindByUsername(username);
+                }
+            }
+
+            return null;
         }
 
         // Medications
@@ -20,6 +48,16 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Suppo
         {
             try
             {
+                // Obtener el usuario actual desde los headers
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                // Establecer el usuario actual en el use case
+                _supportInputs.SetCurrentUser(currentUser);
+
                 _supportInputs.CreateMedication(
                     request.Id,
                     request.Name,
@@ -41,6 +79,16 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Suppo
         {
             try
             {
+                // Obtener el usuario actual desde los headers
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                // Establecer el usuario actual en el use case
+                _supportInputs.SetCurrentUser(currentUser);
+
                 var medications = _supportInputs.GetAllMedications();
                 var medication = medications.FirstOrDefault(m => m.Id == request.Id);
                 if (medication == null)
@@ -62,6 +110,16 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Suppo
         {
             try
             {
+                // Obtener el usuario actual desde los headers
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                // Establecer el usuario actual en el use case
+                _supportInputs.SetCurrentUser(currentUser);
+
                 var medications = _supportInputs.GetAllMedications();
                 return Ok(medications);
             }
@@ -77,6 +135,16 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Suppo
         {
             try
             {
+                // Obtener el usuario actual desde los headers
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                // Establecer el usuario actual en el use case
+                _supportInputs.SetCurrentUser(currentUser);
+
                 _supportInputs.CreateProcedure(
                     request.Id,
                     request.Name,
@@ -99,6 +167,16 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Suppo
         {
             try
             {
+                // Obtener el usuario actual desde los headers
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                // Establecer el usuario actual en el use case
+                _supportInputs.SetCurrentUser(currentUser);
+
                 var procedures = _supportInputs.GetAllProcedures();
                 var procedure = procedures.FirstOrDefault(p => p.Id == request.Id);
                 if (procedure == null)
@@ -120,6 +198,16 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Suppo
         {
             try
             {
+                // Obtener el usuario actual desde los headers
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                // Establecer el usuario actual en el use case
+                _supportInputs.SetCurrentUser(currentUser);
+
                 var procedures = _supportInputs.GetAllProcedures();
                 return Ok(procedures);
             }
@@ -135,6 +223,16 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Suppo
         {
             try
             {
+                // Obtener el usuario actual desde los headers
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                // Establecer el usuario actual en el use case
+                _supportInputs.SetCurrentUser(currentUser);
+
                 _supportInputs.CreateDiagnosticAid(
                     request.Id,
                     request.Name,
@@ -157,6 +255,16 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Suppo
         {
             try
             {
+                // Obtener el usuario actual desde los headers
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                // Establecer el usuario actual en el use case
+                _supportInputs.SetCurrentUser(currentUser);
+
                 var diagnosticAids = _supportInputs.GetAllDiagnosticAids();
                 var diagnosticAid = diagnosticAids.FirstOrDefault(d => d.Id == request.Id);
                 if (diagnosticAid == null)
@@ -178,6 +286,16 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Suppo
         {
             try
             {
+                // Obtener el usuario actual desde los headers
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                // Establecer el usuario actual en el use case
+                _supportInputs.SetCurrentUser(currentUser);
+
                 var diagnosticAids = _supportInputs.GetAllDiagnosticAids();
                 return Ok(diagnosticAids);
             }

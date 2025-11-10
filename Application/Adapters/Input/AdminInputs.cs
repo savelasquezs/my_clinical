@@ -26,16 +26,20 @@ namespace Clinica_Herramientas_2.Application.Adapters.Input
         
         public void CreatePatient(string fullname, string dni, string email, string phonenumber, DateOnly birthdate, string address, Gender gender, string emergencyFirstName, string emergencyLastName, string emergencyRelationship, string emergencyPhone, string insuranceCompanyName, string insurancePolicyNumber, bool insuranceIsActive, DateTime insuranceExpirationDate)
         {
-            // Usar builder para crear paciente (él maneja internamente EmergencyContact y HealthInsurance)
+            // Usar builder para crear paciente (él maneja internamente EmergencyContact y HealthInsurance con validación)
             var patient = patientBuilder.Create(fullname, dni, email, phonenumber, birthdate, address, gender, emergencyFirstName, emergencyLastName, emergencyRelationship, emergencyPhone, insuranceCompanyName, insurancePolicyNumber, insuranceIsActive, insuranceExpirationDate);
             
-            // Llamar a adminUseCase.CreateNewPatient()
-            adminUseCase.CreateNewPatient(fullname, dni, email, phonenumber, birthdate, address, gender, emergencyFirstName, emergencyLastName, emergencyRelationship, emergencyPhone, insuranceCompanyName, insurancePolicyNumber, insuranceIsActive, insuranceExpirationDate);
+            // Llamar a adminUseCase.CreateNewPatient() pasando el paciente ya creado
+            adminUseCase.CreateNewPatient(patient);
         }
         
-        public void UpdatePatient(Patient patient, string email, string phone, string address)
+        public void UpdatePatient(Patient patient, string email, string phone, string address,
+            string emergencyFirstName, string emergencyLastName, string emergencyRelationship, string emergencyPhone,
+            string insuranceCompanyName, string insurancePolicyNumber, bool insuranceIsActive, DateTime insuranceExpirationDate)
         {
-            adminUseCase.UpdateExistingPatient(patient, email, phone, address);
+            adminUseCase.UpdateExistingPatient(patient, email, phone, address, 
+                emergencyFirstName, emergencyLastName, emergencyRelationship, emergencyPhone,
+                insuranceCompanyName, insurancePolicyNumber, insuranceIsActive, insuranceExpirationDate);
         }
         
         public void CreateAppointment(int id, string patientDni, DateTime date)
@@ -66,6 +70,11 @@ namespace Clinica_Herramientas_2.Application.Adapters.Input
         public List<Patient> GetAllPatients()
         {
             return adminUseCase.GetAllPatients();
+        }
+        
+        public void SetCurrentUser(User user)
+        {
+            adminUseCase.SetCurrentUser(user);
         }
     }
 }

@@ -35,9 +35,9 @@ namespace Clinica_Herramientas_2.Application.Adapters.Input
             rrhhUseCase.CreateNewUser(fullname, dni, email, phonenumber, birthdate, address, role, username, password);
         }
         
-        public void UpdateUser(User userToUpdate, string fullname, string email, string phonenumber, string address)
+        public void UpdateUser(User userToUpdate, string fullname, string email, string phonenumber, string address, Role role)
         {
-            rrhhUseCase.UpdateExistingUser(userToUpdate, fullname, email, phonenumber, address);
+            rrhhUseCase.UpdateExistingUser(userToUpdate, fullname, email, phonenumber, address, role);
         }
         
         public void DeleteUser(User userToDelete)
@@ -54,6 +54,11 @@ namespace Clinica_Herramientas_2.Application.Adapters.Input
         public User? FindByUsername(string username)
         {
             return userPort.FindByUsername(username);
+        }
+
+        public void SetCurrentUser(User user)
+        {
+            rrhhUseCase.SetCurrentUser(user);
         }
     }
 }

@@ -33,6 +33,11 @@ namespace Clinica_Herramientas_2.Domain.Model
         public string Username { get => username; private set => username = value; }
         public string Password { get => password; private set => password = value; }
         
+        internal void SetRole(Role role)
+        {
+            this.role = role;
+        }
+        
         // Propiedades de navegación
         public ICollection<MedicalRecord> MedicalRecordsAsDoctor { get; set; } = new List<MedicalRecord>();
         public ICollection<NurseVisit> NurseVisits { get; set; } = new List<NurseVisit>();
