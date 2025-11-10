@@ -24,8 +24,23 @@ export const adminService = {
   },
   
   // Appointments
+  async getAllAppointments() {
+    const response = await api.get(ENDPOINTS.ADMIN.APPOINTMENTS)
+    return response.data
+  },
+  
   async createAppointment(data) {
     const response = await api.post(ENDPOINTS.ADMIN.APPOINTMENTS, data)
+    return response.data
+  },
+  
+  async updateAppointment(id, data) {
+    const response = await api.put(ENDPOINTS.ADMIN.APPOINTMENT_BY_ID(id), data)
+    return response.data
+  },
+  
+  async cancelAppointment(id) {
+    const response = await api.delete(ENDPOINTS.ADMIN.APPOINTMENT_BY_ID(id))
     return response.data
   },
   

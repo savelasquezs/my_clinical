@@ -70,5 +70,15 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Output.Persistence
         {
             return FindByPatient(dni);
         }
+        
+        public void UpdateAppointment(Appointment appointment)
+        {
+            Update(appointment);
+        }
+        
+        public void DeleteAppointment(Appointment appointment)
+        {
+            Delete(appointment);
+        }
     }
 }

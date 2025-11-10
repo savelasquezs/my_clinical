@@ -13,6 +13,10 @@ namespace Clinica_Herramientas_2.Domain.Ports
 
         public void SaveAppointment(Appointment appointment);
         public List<Appointment> FindByPatientDni(string dni);
+        public List<Appointment> FindAll();
+        public Appointment? FindById(int id);
+        public void UpdateAppointment(Appointment appointment);
+        public void DeleteAppointment(Appointment appointment);
 
     }
 }

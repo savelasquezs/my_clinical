@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Clinica_Herramientas_2.Application.Adapters.Input;
 using Clinica_Herramientas_2.Domain.Model;
 using Clinica_Herramientas_2.Infrastructure.Config;
+using System.Linq;
 
 namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Admin
 {
@@ -71,6 +72,85 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Admin
             }
         }
 
+        [HttpGet]
+        public IActionResult GetAllAppointments()
+        {
+            try
+            {
+                // Obtener el usuario actual desde los headers
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                // Establecer el usuario actual en el use case
+                _adminInputs.SetCurrentUser(currentUser);
+
+                var appointments = _adminInputs.GetAllAppointments();
+                var appointmentDtos = appointments.Select(a => new
+                {
+                    id1 = a.Id1,
+                    patientDni = a.Patient1?.Dni ?? string.Empty,
+                    patientName = a.Patient1?.Fullname ?? string.Empty,
+                    date1 = a.Date1
+                }).ToList();
+                return Ok(appointmentDtos);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult UpdateAppointment(int id, [FromBody] UpdateAppointmentRequest request)
+        {
+            try
+            {
+                // Obtener el usuario actual desde los headers
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                // Establecer el usuario actual en el use case
+                _adminInputs.SetCurrentUser(currentUser);
+
+                _adminInputs.UpdateAppointment(id, DateTime.SpecifyKind(DateTime.Parse(request.Date), DateTimeKind.Utc));
+                return Ok(new { message = "Cita actualizada exitosamente." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult CancelAppointment(int id)
+        {
+            try
+            {
+                // Obtener el usuario actual desde los headers
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                // Establecer el usuario actual en el use case
+                _adminInputs.SetCurrentUser(currentUser);
+
+                _adminInputs.CancelAppointment(id);
+                return Ok(new { message = "Cita cancelada exitosamente." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         [HttpGet("patient/{patientDni}")]
         public IActionResult GetPatientAppointments(string patientDni)
         {
@@ -100,6 +180,11 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Admin
     {
         public int Id { get; set; }
         public string PatientDni { get; set; } = string.Empty;
+        public string Date { get; set; } = string.Empty;
+    }
+
+    public class UpdateAppointmentRequest
+    {
         public string Date { get; set; } = string.Empty;
     }
 }

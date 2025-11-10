@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Clinica_Herramientas_2.Application.Adapters.Input;
 using Clinica_Herramientas_2.Domain.Model;
 using Clinica_Herramientas_2.Infrastructure.Config;
+using Clinica_Herramientas_2.Domain.Services;
 using System.Linq;
 
 namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Admin
@@ -12,11 +13,13 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Admin
     {
         private readonly AdminInputs _adminInputs;
         private readonly AdminConfig _adminConfig;
+        private readonly ViewPatientInformation _viewPatientInformation;
 
         public PatientsController(AdminInputs adminInputs, AdminConfig adminConfig)
         {
             _adminInputs = adminInputs;
             _adminConfig = adminConfig;
+            _viewPatientInformation = adminConfig.ViewPatientInformationService;
         }
 
         private User? GetCurrentUserFromHeaders()
@@ -139,14 +142,14 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Admin
                     return Unauthorized(new { message = "Usuario no autenticado." });
                 }
 
-                // Establecer el usuario actual en el use case
-                _adminInputs.SetCurrentUser(currentUser);
-
-                var patient = _adminInputs.GetPatientByDni(dni);
-                if (patient == null)
+                // Permitir acceso a Admin, Doctor y Nurse
+                if (currentUser.Role != Role.Admin && currentUser.Role != Role.Doctor && currentUser.Role != Role.Nurse)
                 {
-                    return NotFound(new { message = "Paciente no encontrado." });
+                    return Forbid("Solo administradores, doctores y enfermeras pueden acceder a esta información.");
                 }
+
+                // Usar ViewPatientInformation directamente (no requiere SetCurrentUser)
+                var patient = _viewPatientInformation.GetPatientByDni(dni);
 
                 var patientDto = new
                 {
@@ -196,10 +199,14 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Admin
                     return Unauthorized(new { message = "Usuario no autenticado." });
                 }
 
-                // Establecer el usuario actual en el use case
-                _adminInputs.SetCurrentUser(currentUser);
+                // Permitir acceso a Admin, Doctor y Nurse
+                if (currentUser.Role != Role.Admin && currentUser.Role != Role.Doctor && currentUser.Role != Role.Nurse)
+                {
+                    return Forbid("Solo administradores, doctores y enfermeras pueden acceder a esta información.");
+                }
 
-                var patients = _adminInputs.GetAllPatients();
+                // Usar ViewPatientInformation directamente (no requiere SetCurrentUser)
+                var patients = _viewPatientInformation.GetAllPatients();
                 var patientDtos = patients.Select(p => new
                 {
                     dni = p.Dni,

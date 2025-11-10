@@ -10,6 +10,7 @@ export const ENDPOINTS = {
     PATIENTS: '/admin/patients',
     PATIENT_BY_DNI: (dni) => `/admin/patients/${dni}`,
     APPOINTMENTS: '/admin/appointments',
+    APPOINTMENT_BY_ID: (id) => `/admin/appointments/${id}`,
     PATIENT_APPOINTMENTS: (dni) => `/admin/appointments/patient/${dni}`,
     INVOICES: '/admin/invoices'
   },

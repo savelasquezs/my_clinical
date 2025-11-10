@@ -6,8 +6,11 @@
         <input v-model.number="formData.invoiceNumber" type="number" class="input" required />
       </div>
       <div>
-        <label class="label">DNI del Paciente *</label>
-        <input v-model="formData.patientDni" type="text" class="input" required />
+        <PatientSelector 
+          v-model="formData.patientDni"
+          label="Paciente *"
+          :required="true"
+        />
       </div>
       <div>
         <label class="label">DNI del Doctor *</label>
@@ -36,6 +39,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import PatientSelector from '@/components/shared/PatientSelector.vue'
 
 const emit = defineEmits(['submit', 'cancel'])
 

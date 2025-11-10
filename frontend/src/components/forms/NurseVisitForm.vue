@@ -2,8 +2,11 @@
   <form @submit.prevent="handleSubmit" class="space-y-6">
     <div class="grid grid-cols-2 gap-4">
       <div>
-        <label class="label">DNI del Paciente *</label>
-        <input v-model="formData.patientDni" type="text" class="input" required />
+        <PatientSelector 
+          v-model="formData.patientDni"
+          label="Paciente *"
+          :required="true"
+        />
       </div>
       <div>
         <label class="label">Número de Orden *</label>
@@ -64,6 +67,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import PatientSelector from '@/components/shared/PatientSelector.vue'
 
 const emit = defineEmits(['submit', 'cancel'])
 

@@ -19,6 +19,8 @@ namespace Clinica_Herramientas_2.Infrastructure.Config
         public CreatePatient CreatePatientService { get; private set; }
         public UpdatePatient UpdatePatientService { get; private set; }
         public CreateAppointment CreateAppointmentService { get; private set; }
+        public UpdateAppointment UpdateAppointmentService { get; private set; }
+        public DeleteAppointment DeleteAppointmentService { get; private set; }
         public CreateInvoice CreateInvoiceService { get; private set; }
         public ViewPatientInformation ViewPatientInformationService { get; private set; }
         
@@ -46,6 +48,8 @@ namespace Clinica_Herramientas_2.Infrastructure.Config
             UpdatePatientService = new UpdatePatient(PatientPort);
             ViewPatientInformationService = new ViewPatientInformation(PatientPort, appointmentPort, orderPort);
             CreateAppointmentService = new CreateAppointment(AppointmentPort, PatientPort);
+            UpdateAppointmentService = new UpdateAppointment(AppointmentPort);
+            DeleteAppointmentService = new DeleteAppointment(AppointmentPort);
             CreateInvoiceService = new CreateInvoice(InvoicePort, PatientPort, userPort, orderPort, new BillingRulesService());
             
             // Caso de uso
@@ -53,8 +57,11 @@ namespace Clinica_Herramientas_2.Infrastructure.Config
                 CreatePatientService,
                 UpdatePatientService,
                 CreateAppointmentService,
+                UpdateAppointmentService,
+                DeleteAppointmentService,
                 CreateInvoiceService,
-                ViewPatientInformationService
+                ViewPatientInformationService,
+                AppointmentPort
             );
             
             // Builders

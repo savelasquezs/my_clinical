@@ -47,6 +47,16 @@ namespace Clinica_Herramientas_2.Application.Adapters.Input
             adminUseCase.CreateNewAppointment(id, patientDni, date);
         }
         
+        public void UpdateAppointment(int appointmentId, DateTime newDate)
+        {
+            adminUseCase.UpdateExistingAppointment(appointmentId, newDate);
+        }
+        
+        public void CancelAppointment(int appointmentId)
+        {
+            adminUseCase.CancelAppointment(appointmentId);
+        }
+        
         public Invoice CreateInvoice(int invoiceNumber, string patientDni, string doctorDni, List<int> orderNumbers, DateTime invoiceDate)
         {
             return adminUseCase.CreateNewInvoice(invoiceNumber, patientDni, doctorDni, orderNumbers, invoiceDate);
@@ -70,6 +80,11 @@ namespace Clinica_Herramientas_2.Application.Adapters.Input
         public List<Patient> GetAllPatients()
         {
             return adminUseCase.GetAllPatients();
+        }
+        
+        public List<Appointment> GetAllAppointments()
+        {
+            return adminUseCase.GetAllAppointments();
         }
         
         public void SetCurrentUser(User user)
