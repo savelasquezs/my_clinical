@@ -1,10 +1,10 @@
 <template>
   <Teleport to="body">
-    <Transition name="modal">
+    <Transition name="modal" @after-leave="handleAfterLeave">
       <div
         v-if="isOpen"
         class="fixed inset-0 z-50 overflow-y-auto"
-        @click.self="$emit('close')"
+        @click.self="handleClose"
       >
         <div class="flex min-h-screen items-center justify-center p-4">
           <div
@@ -18,7 +18,7 @@
                 <h3 v-if="title" class="text-lg font-semibold text-gray-900">{{ title }}</h3>
               </slot>
               <button
-                @click="$emit('close')"
+                @click="handleClose"
                 class="text-gray-400 hover:text-gray-500 transition-colors"
               >
                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -29,7 +29,7 @@
             
             <!-- Body -->
             <div class="p-6">
-              <slot></slot>
+              <slot v-if="isOpen"></slot>
             </div>
             
             <!-- Footer -->
@@ -62,7 +62,7 @@ const props = defineProps({
   }
 })
 
-defineEmits(['close'])
+const emit = defineEmits(['close'])
 
 const sizeClasses = computed(() => {
   const sizes = {
@@ -73,6 +73,17 @@ const sizeClasses = computed(() => {
   }
   return sizes[props.size]
 })
+
+const handleClose = () => {
+  if (props.isOpen) {
+    emit('close')
+  }
+}
+
+const handleAfterLeave = () => {
+  // Este método se llama después de que la transición de salida termine
+  // Puede ser útil para limpiar estados si es necesario
+}
 </script>
 
 <style scoped>

@@ -13,19 +13,38 @@ namespace Clinica_Herramientas_2.Domain.Services
         private readonly IMedicationPort medicationPort;
         private readonly IProcedurePort procedurePort;
         private readonly IDiagnosticAidPort diagnosticAidPort;
+        private readonly IInventoryPort inventoryPort;
 
-        public ManageInventory(IMedicationPort medicationPort, IProcedurePort procedurePort, IDiagnosticAidPort diagnosticAidPort)
+        public ManageInventory(IMedicationPort medicationPort, IProcedurePort procedurePort, IDiagnosticAidPort diagnosticAidPort, IInventoryPort inventoryPort)
         {
             this.medicationPort = medicationPort;
             this.procedurePort = procedurePort;
             this.diagnosticAidPort = diagnosticAidPort;
+            this.inventoryPort = inventoryPort;
+        }
+
+        private bool ClinicalResourceIdExists(int id)
+        {
+            // Verificar si el ID existe en cualquier tipo de recurso clínico
+            return inventoryPort.FindMedicationById(id) != null ||
+                   inventoryPort.FindProcedureById(id) != null ||
+                   inventoryPort.FindDiagnosticAidById(id) != null;
+        }
+
+        private string GetResourceTypeName(int id)
+        {
+            if (inventoryPort.FindMedicationById(id) != null) return "medicamento";
+            if (inventoryPort.FindProcedureById(id) != null) return "procedimiento";
+            if (inventoryPort.FindDiagnosticAidById(id) != null) return "ayuda diagnóstica";
+            return "recurso clínico";
         }
 
         public void CreateMedication(Medication medication)
         {
-            if (medicationPort.FindById(medication.Id) != null)
+            if (ClinicalResourceIdExists(medication.Id))
             {
-                throw new Exception("Ya existe un medicamento con este ID");
+                var resourceType = GetResourceTypeName(medication.Id);
+                throw new Exception($"Ya existe un {resourceType} con el ID {medication.Id}. El ID debe ser único entre todos los recursos clínicos (medicamentos, procedimientos y ayudas diagnósticas).");
             }
             medicationPort.Save(medication);
         }
@@ -38,9 +57,10 @@ namespace Clinica_Herramientas_2.Domain.Services
 
         public void CreateProcedure(Procedure procedure)
         {
-            if (procedurePort.FindById(procedure.Id) != null)
+            if (ClinicalResourceIdExists(procedure.Id))
             {
-                throw new Exception("Ya existe un procedimiento con este ID");
+                var resourceType = GetResourceTypeName(procedure.Id);
+                throw new Exception($"Ya existe un {resourceType} con el ID {procedure.Id}. El ID debe ser único entre todos los recursos clínicos (medicamentos, procedimientos y ayudas diagnósticas).");
             }
             procedurePort.Save(procedure);
         }
@@ -53,9 +73,10 @@ namespace Clinica_Herramientas_2.Domain.Services
 
         public void CreateDiagnosticAid(DiagnosticAid diagnosticAid)
         {
-            if (diagnosticAidPort.FindById(diagnosticAid.Id) != null)
+            if (ClinicalResourceIdExists(diagnosticAid.Id))
             {
-                throw new Exception("Ya existe una ayuda diagnóstica con este ID");
+                var resourceType = GetResourceTypeName(diagnosticAid.Id);
+                throw new Exception($"Ya existe un {resourceType} con el ID {diagnosticAid.Id}. El ID debe ser único entre todos los recursos clínicos (medicamentos, procedimientos y ayudas diagnósticas).");
             }
             diagnosticAidPort.Save(diagnosticAid);
         }

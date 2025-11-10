@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Clinica_Herramientas_2.Application.Adapters.Input;
 using Clinica_Herramientas_2.Domain.Model;
 using Clinica_Herramientas_2.Infrastructure.Config;
+using System.Linq;
 
 namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Doctor
 {
@@ -80,6 +81,42 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Docto
                 );
 
                 return Ok(new { message = "Registro médico creado exitosamente." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public IActionResult GetAllMedicalRecords()
+        {
+            try
+            {
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                _doctorInputs.SetCurrentUser(currentUser);
+
+                var medicalRecords = _doctorConfig.MedicalRecordPort.FindAll();
+                var medicalRecordDtos = medicalRecords.Select(mr => new
+                {
+                    id = mr.Id,
+                    date = mr.Date,
+                    patientDni = mr.Patient.Dni,
+                    patientName = mr.Patient.Fullname,
+                    doctorDni = mr.Doctor.Dni,
+                    doctorName = mr.Doctor.Fullname,
+                    consultationReason = mr.ConsultationReason,
+                    symptoms = mr.Symptoms,
+                    diagnosis = mr.Diagnosis,
+                    orderNumber = mr.Order?.OrderNumber
+                }).ToList();
+
+                return Ok(medicalRecordDtos);
             }
             catch (Exception ex)
             {

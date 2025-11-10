@@ -8,29 +8,39 @@ export const doctorService = {
     return response.data
   },
   
+  async getOrderByNumber(orderNumber) {
+    const response = await api.get(ENDPOINTS.DOCTOR.ORDER_BY_NUMBER(orderNumber))
+    return response.data
+  },
+  
   async getPatientOrders(patientDni) {
     const response = await api.get(ENDPOINTS.DOCTOR.PATIENT_ORDERS(patientDni))
     return response.data
   },
   
-  async addMedicationToOrder(orderNumber, data) {
-    const response = await api.post(ENDPOINTS.DOCTOR.ADD_MEDICATION_TO_ORDER(orderNumber), data)
+  async addOrderItem(orderNumber, data) {
+    const response = await api.post(ENDPOINTS.DOCTOR.ADD_ORDER_ITEM(orderNumber), data)
     return response.data
   },
   
-  async addProcedureToOrder(orderNumber, data) {
-    const response = await api.post(ENDPOINTS.DOCTOR.ADD_PROCEDURE_TO_ORDER(orderNumber), data)
+  async updateOrderItem(orderNumber, itemNumber, data) {
+    const response = await api.put(ENDPOINTS.DOCTOR.UPDATE_ORDER_ITEM(orderNumber, itemNumber), data)
     return response.data
   },
   
-  async addDiagnosticAidToOrder(orderNumber, data) {
-    const response = await api.post(ENDPOINTS.DOCTOR.ADD_DIAGNOSTIC_AID_TO_ORDER(orderNumber), data)
+  async deleteOrderItem(orderNumber, itemNumber) {
+    const response = await api.delete(ENDPOINTS.DOCTOR.DELETE_ORDER_ITEM(orderNumber, itemNumber))
     return response.data
   },
   
   // Medical Records
   async createMedicalRecord(data) {
     const response = await api.post(ENDPOINTS.DOCTOR.MEDICAL_RECORDS, data)
+    return response.data
+  },
+  
+  async getAllMedicalRecords() {
+    const response = await api.get(ENDPOINTS.DOCTOR.ALL_MEDICAL_RECORDS)
     return response.data
   },
   

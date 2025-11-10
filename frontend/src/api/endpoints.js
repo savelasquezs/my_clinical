@@ -18,11 +18,13 @@ export const ENDPOINTS = {
   // Doctor
   DOCTOR: {
     ORDERS: '/doctor/orders',
+    ORDER_BY_NUMBER: (orderNumber) => `/doctor/orders/${orderNumber}`,
     PATIENT_ORDERS: (dni) => `/doctor/orders/patient/${dni}`,
-    ADD_MEDICATION_TO_ORDER: (orderNumber) => `/doctor/orders/${orderNumber}/items/medication`,
-    ADD_PROCEDURE_TO_ORDER: (orderNumber) => `/doctor/orders/${orderNumber}/items/procedure`,
-    ADD_DIAGNOSTIC_AID_TO_ORDER: (orderNumber) => `/doctor/orders/${orderNumber}/items/diagnostic-aid`,
+    ADD_ORDER_ITEM: (orderNumber) => `/doctor/orders/${orderNumber}/items`,
+    UPDATE_ORDER_ITEM: (orderNumber, itemNumber) => `/doctor/orders/${orderNumber}/items/${itemNumber}`,
+    DELETE_ORDER_ITEM: (orderNumber, itemNumber) => `/doctor/orders/${orderNumber}/items/${itemNumber}`,
     MEDICAL_RECORDS: '/doctor/medical-records',
+    ALL_MEDICAL_RECORDS: '/doctor/medical-records',
     MEDICAL_HISTORY: (dni) => `/doctor/medical-records/patient/${dni}`
   },
   

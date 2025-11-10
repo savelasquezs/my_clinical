@@ -27,7 +27,14 @@
             <EmptyState :title="emptyTitle" :message="emptyMessage" />
           </td>
         </tr>
-        <tr v-else v-for="(row, index) in data" :key="index" class="hover:bg-gray-50">
+        <tr 
+          v-else 
+          v-for="(row, index) in data" 
+          :key="index" 
+          class="hover:bg-gray-50"
+          :class="{ 'cursor-pointer': clickable }"
+          @click="clickable ? $emit('row-click', row) : null"
+        >
           <td
             v-for="column in columns"
             :key="column.key"
@@ -95,10 +102,14 @@ const props = defineProps({
   emptyMessage: {
     type: String,
     default: 'No se encontraron registros'
+  },
+  clickable: {
+    type: Boolean,
+    default: false
   }
 })
 
-defineEmits(['edit', 'delete'])
+defineEmits(['edit', 'delete', 'row-click'])
 
 const hasActions = computed(() => props.showEdit || props.showDelete)
 

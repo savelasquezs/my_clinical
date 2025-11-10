@@ -39,7 +39,7 @@ namespace Clinica_Herramientas_2.Infrastructure.Config
             UserPort = userPort;
             
             // Servicios
-            ManageInventoryService = new ManageInventory(MedicationPort, ProcedurePort, DiagnosticAidPort);
+            ManageInventoryService = new ManageInventory(MedicationPort, ProcedurePort, DiagnosticAidPort, InventoryPort);
             InventoryService = new InventoryService(MedicationPort, ProcedurePort, DiagnosticAidPort);
             
             // Caso de uso

@@ -1,9 +1,15 @@
 <template>
   <form @submit.prevent="handleSubmit" class="space-y-6">
     <div class="grid grid-cols-2 gap-4">
-      <div v-if="mode === 'edit'">
-        <label class="label">ID</label>
-        <input v-model.number="formData.id" type="number" class="input" disabled />
+      <div>
+        <label class="label">ID *</label>
+        <input 
+          v-model.number="formData.id" 
+          type="number" 
+          class="input" 
+          :disabled="mode === 'edit'"
+          :required="mode === 'create'"
+        />
       </div>
       <div>
         <label class="label">Nombre *</label>
@@ -123,7 +129,39 @@ watch(() => props.initialData, (newData) => {
 }, { immediate: true })
 
 const handleSubmit = () => {
-  emit('submit', { ...formData.value })
+  // Validar que el ID esté presente cuando se crea
+  if (props.mode === 'create' && (!formData.value.id || formData.value.id <= 0)) {
+    // El ID es requerido, pero dejamos que el backend valide esto
+    // ya que puede haber casos donde se genere automáticamente
+  }
+  
+  const data = { ...formData.value }
+  
+  // Mapear campos según el tipo para que coincidan con el backend
+  if (props.type === 'medications') {
+    // El backend espera defaultDose y treatmentDurationDays
+    data.defaultDose = data.dose
+    data.treatmentDurationDays = data.treatmentDuration
+    // Eliminar campos que no pertenecen a medicamentos
+    delete data.dose
+    delete data.treatmentDuration
+    delete data.frequency
+    delete data.quantity
+    delete data.requiresSpecialist
+    delete data.specialistTypeId
+  } else if (props.type === 'procedures') {
+    // Eliminar campos que no pertenecen a procedimientos
+    delete data.dose
+    delete data.treatmentDuration
+    delete data.quantity
+  } else if (props.type === 'diagnosticAids') {
+    // Eliminar campos que no pertenecen a ayudas diagnósticas
+    delete data.dose
+    delete data.treatmentDuration
+    delete data.frequency
+  }
+  
+  emit('submit', data)
 }
 </script>
 

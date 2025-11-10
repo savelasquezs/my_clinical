@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Clinica_Herramientas_2.Application.Adapters.Input;
 using Clinica_Herramientas_2.Domain.Model;
 using Clinica_Herramientas_2.Infrastructure.Config;
+using System.Linq;
 
 namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Doctor
 {
@@ -57,12 +58,29 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Docto
                 // Establecer el usuario actual en el use case
                 _doctorInputs.SetCurrentUser(currentUser);
 
+                // Validar que haya al menos un item
+                if (request.Items == null || request.Items.Count == 0)
+                {
+                    return BadRequest(new { message = "La orden debe tener al menos un item." });
+                }
+
+                // Crear la orden
                 var order = _doctorInputs.CreateOrder(
                     request.OrderNumber,
                     DateTime.SpecifyKind(DateTime.Parse(request.CreationDate), DateTimeKind.Utc)
                 );
 
-                return Ok(order);
+                // Agregar los items usando AddOrderItemService
+                foreach (var itemRequest in request.Items)
+                {
+                    itemRequest.OrderNumber = request.OrderNumber;
+                    var itemDto = itemRequest.ToCreateOrderItemDTO();
+                    _doctorConfig.AddOrderItemService.AddItem(itemDto);
+                }
+
+                // Obtener la orden completa con items
+                var completeOrder = _doctorInputs.GetOrderByNumber(request.OrderNumber);
+                return Ok(MapOrderToDto(completeOrder));
             }
             catch (Exception ex)
             {
@@ -70,39 +88,21 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Docto
             }
         }
 
-        [HttpPost("{orderNumber}/items/medication")]
-        public IActionResult AddMedicationToOrder(int orderNumber, [FromBody] AddMedicationRequest request)
+        [HttpGet("{orderNumber}")]
+        public IActionResult GetOrderByNumber(int orderNumber)
         {
             try
             {
-                // Obtener el usuario actual desde los headers
                 var currentUser = GetCurrentUserFromHeaders();
                 if (currentUser == null)
                 {
                     return Unauthorized(new { message = "Usuario no autenticado." });
                 }
 
-                // Establecer el usuario actual en el use case
                 _doctorInputs.SetCurrentUser(currentUser);
 
-                // Necesitamos obtener la orden - por ahora asumimos que viene en el request
-                // En una implementación real, deberíamos obtenerla del repositorio
-                var order = new Order(orderNumber, DateTime.Now, new List<OrderItem>());
-                
-                // Necesitamos obtener el Medication desde el inventario
-                // Por ahora, creamos uno temporal con el ID proporcionado
-                var medication = new Medication(request.MedicationId, "", 0, "", 0);
-
-                _doctorInputs.AddMedicationToOrder(
-                    order,
-                    request.ItemNumber,
-                    request.Cost,
-                    medication,
-                    request.Dose,
-                    request.TreatmentDuration
-                );
-
-                return Ok(new { message = "Medicamento agregado a la orden exitosamente." });
+                var order = _doctorInputs.GetOrderByNumber(orderNumber);
+                return Ok(MapOrderToDto(order));
             }
             catch (Exception ex)
             {
@@ -110,35 +110,24 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Docto
             }
         }
 
-        [HttpPost("{orderNumber}/items/procedure")]
-        public IActionResult AddProcedureToOrder(int orderNumber, [FromBody] AddProcedureRequest request)
+        [HttpPost("{orderNumber}/items")]
+        public IActionResult AddOrderItem(int orderNumber, [FromBody] CreateOrderItemRequest itemRequest)
         {
             try
             {
-                // Obtener el usuario actual desde los headers
                 var currentUser = GetCurrentUserFromHeaders();
                 if (currentUser == null)
                 {
                     return Unauthorized(new { message = "Usuario no autenticado." });
                 }
 
-                // Establecer el usuario actual en el use case
                 _doctorInputs.SetCurrentUser(currentUser);
 
-                var order = new Order(orderNumber, DateTime.Now, new List<OrderItem>());
-                var procedure = new Procedure(request.ProcedureId, "", 0, 0, false, null);
+                itemRequest.OrderNumber = orderNumber;
+                var itemDto = itemRequest.ToCreateOrderItemDTO();
+                _doctorConfig.AddOrderItemService.AddItem(itemDto);
 
-                _doctorInputs.AddProcedureToOrder(
-                    order,
-                    request.ItemNumber,
-                    request.Cost,
-                    procedure,
-                    request.Frequency,
-                    request.RequiresSpecialist,
-                    request.SpecialistTypeId
-                );
-
-                return Ok(new { message = "Procedimiento agregado a la orden exitosamente." });
+                return Ok(new { message = "Item agregado a la orden exitosamente." });
             }
             catch (Exception ex)
             {
@@ -146,35 +135,47 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Docto
             }
         }
 
-        [HttpPost("{orderNumber}/items/diagnostic-aid")]
-        public IActionResult AddDiagnosticAidToOrder(int orderNumber, [FromBody] AddDiagnosticAidRequest request)
+        [HttpPut("{orderNumber}/items/{itemNumber}")]
+        public IActionResult UpdateOrderItem(int orderNumber, int itemNumber, [FromBody] CreateOrderItemRequest itemRequest)
         {
             try
             {
-                // Obtener el usuario actual desde los headers
                 var currentUser = GetCurrentUserFromHeaders();
                 if (currentUser == null)
                 {
                     return Unauthorized(new { message = "Usuario no autenticado." });
                 }
 
-                // Establecer el usuario actual en el use case
                 _doctorInputs.SetCurrentUser(currentUser);
 
-                var order = new Order(orderNumber, DateTime.Now, new List<OrderItem>());
-                var diagnosticAid = new DiagnosticAid(request.DiagnosticAidId, "", 0, 0, false, null);
+                itemRequest.OrderNumber = orderNumber;
+                var itemDto = itemRequest.ToCreateOrderItemDTO();
+                _doctorInputs.UpdateOrderItem(itemDto, itemNumber);
 
-                _doctorInputs.AddDiagnosticAidToOrder(
-                    order,
-                    request.ItemNumber,
-                    request.Cost,
-                    diagnosticAid,
-                    request.Quantity,
-                    request.RequiresSpecialist,
-                    request.SpecialistTypeId
-                );
+                return Ok(new { message = "Item actualizado exitosamente." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
 
-                return Ok(new { message = "Ayuda diagnóstica agregada a la orden exitosamente." });
+        [HttpDelete("{orderNumber}/items/{itemNumber}")]
+        public IActionResult DeleteOrderItem(int orderNumber, int itemNumber)
+        {
+            try
+            {
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                _doctorInputs.SetCurrentUser(currentUser);
+
+                _doctorInputs.RemoveOrderItem(orderNumber, itemNumber);
+
+                return Ok(new { message = "Item eliminado exitosamente." });
             }
             catch (Exception ex)
             {
@@ -187,23 +188,92 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Docto
         {
             try
             {
-                // Obtener el usuario actual desde los headers
                 var currentUser = GetCurrentUserFromHeaders();
                 if (currentUser == null)
                 {
                     return Unauthorized(new { message = "Usuario no autenticado." });
                 }
 
-                // Establecer el usuario actual en el use case
                 _doctorInputs.SetCurrentUser(currentUser);
 
                 var orders = _doctorInputs.GetPatientOrders(patientDni);
-                return Ok(orders);
+                var orderDtos = orders.Select(o => MapOrderToDto(o)).ToList();
+                return Ok(orderDtos);
             }
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
+        }
+
+        private object MapOrderToDto(Order order)
+        {
+            if (order == null)
+            {
+                throw new ArgumentNullException(nameof(order), "La orden no puede ser null");
+            }
+
+            return new
+            {
+                orderNumber = order.OrderNumber,
+                creationDate = order.CreationDate,
+                items = order.Items?.Select(item => MapOrderItemToDto(item)).ToList() ?? new List<object>()
+            };
+        }
+
+        private object MapOrderItemToDto(OrderItem item)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item), "El item no puede ser null");
+            }
+
+            var baseDto = new
+            {
+                orderNumber = item.OrderNumber,
+                itemNumber = item.ItemNumber,
+                cost = item.Cost
+            };
+
+            return item switch
+            {
+                MedicationOrderItem medicationItem => new
+                {
+                    baseDto.orderNumber,
+                    baseDto.itemNumber,
+                    baseDto.cost,
+                    itemType = "Medication",
+                    medicationId = medicationItem.Medication?.Id ?? 0,
+                    medicationName = medicationItem.Medication?.Name ?? "Medicamento no encontrado",
+                    dose = medicationItem.Dose ?? string.Empty,
+                    treatmentDuration = medicationItem.TreatmentDuration
+                },
+                ProcedureOrderItem procedureItem => new
+                {
+                    baseDto.orderNumber,
+                    baseDto.itemNumber,
+                    baseDto.cost,
+                    itemType = "Procedure",
+                    procedureId = procedureItem.Procedure?.Id ?? 0,
+                    procedureName = procedureItem.Procedure?.Name ?? "Procedimiento no encontrado",
+                    frequency = procedureItem.Frequency,
+                    requiresSpecialist = procedureItem.RequiresSpecialist,
+                    specialistTypeId = procedureItem.SpecialistTypeId
+                },
+                DiagnosticAidOrderItem diagnosticAidItem => new
+                {
+                    baseDto.orderNumber,
+                    baseDto.itemNumber,
+                    baseDto.cost,
+                    itemType = "DiagnosticAid",
+                    diagnosticAidId = diagnosticAidItem.DiagnosticAid?.Id ?? 0,
+                    diagnosticAidName = diagnosticAidItem.DiagnosticAid?.Name ?? "Ayuda diagnóstica no encontrada",
+                    quantity = diagnosticAidItem.Quantity,
+                    requiresSpecialist = diagnosticAidItem.RequiresSpecialist,
+                    specialistTypeId = diagnosticAidItem.SpecialistTypeId
+                },
+                _ => baseDto
+            };
         }
     }
 
@@ -211,38 +281,52 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Docto
     {
         public int OrderNumber { get; set; }
         public string CreationDate { get; set; } = string.Empty;
+        public List<CreateOrderItemRequest> Items { get; set; } = new List<CreateOrderItemRequest>();
     }
 
-    public class AddMedicationRequest
+    public class CreateOrderItemRequest
     {
-        public string PatientDni { get; set; } = string.Empty;
-        public int ItemNumber { get; set; }
+        public int OrderNumber { get; set; }
         public decimal Cost { get; set; }
-        public int MedicationId { get; set; }
-        public string Dose { get; set; } = string.Empty;
-        public int TreatmentDuration { get; set; }
-    }
-
-    public class AddProcedureRequest
-    {
-        public string PatientDni { get; set; } = string.Empty;
-        public int ItemNumber { get; set; }
-        public decimal Cost { get; set; }
-        public int ProcedureId { get; set; }
-        public int Frequency { get; set; }
-        public bool RequiresSpecialist { get; set; }
+        public string ItemType { get; set; } = string.Empty; // String para facilitar el binding desde JSON
+        
+        // Medication specific
+        public int? MedicationId { get; set; }
+        public string? Dose { get; set; }
+        public int? TreatmentDuration { get; set; }
+        
+        // Procedure specific
+        public int? ProcedureId { get; set; }
+        public int? Frequency { get; set; }
+        public bool? RequiresSpecialist { get; set; }
         public int? SpecialistTypeId { get; set; }
-    }
+        
+        // DiagnosticAid specific
+        public int? DiagnosticAidId { get; set; }
+        public int? Quantity { get; set; }
 
-    public class AddDiagnosticAidRequest
-    {
-        public string PatientDni { get; set; } = string.Empty;
-        public int ItemNumber { get; set; }
-        public decimal Cost { get; set; }
-        public int DiagnosticAidId { get; set; }
-        public int Quantity { get; set; }
-        public bool RequiresSpecialist { get; set; }
-        public int? SpecialistTypeId { get; set; }
+        public CreateOrderItemDTO ToCreateOrderItemDTO()
+        {
+            if (!Enum.TryParse<OrderItemType>(ItemType, ignoreCase: true, out var itemType))
+            {
+                throw new ArgumentException($"Tipo de ítem no válido: {ItemType}. Debe ser uno de: Medication, Procedure, DiagnosticAid");
+            }
+
+            return new CreateOrderItemDTO
+            {
+                OrderNumber = OrderNumber,
+                Cost = Cost,
+                ItemType = itemType,
+                MedicationId = MedicationId,
+                Dose = Dose,
+                TreatmentDuration = TreatmentDuration,
+                ProcedureId = ProcedureId,
+                Frequency = Frequency,
+                RequiresSpecialist = RequiresSpecialist,
+                SpecialistTypeId = SpecialistTypeId,
+                DiagnosticAidId = DiagnosticAidId,
+                Quantity = Quantity
+            };
+        }
     }
 }
-

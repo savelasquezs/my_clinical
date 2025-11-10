@@ -82,5 +82,20 @@ namespace Clinica_Herramientas_2.Application.Adapters.Input
         {
             doctorUseCase.SetCurrentUser(user);
         }
+
+        public Order GetOrderByNumber(int orderNumber)
+        {
+            return doctorUseCase.GetOrderByNumber(orderNumber);
+        }
+
+        public void UpdateOrderItem(CreateOrderItemDTO dto, int itemNumber)
+        {
+            doctorUseCase.UpdateOrderItem(dto, itemNumber);
+        }
+
+        public void RemoveOrderItem(int orderNumber, int itemNumber)
+        {
+            doctorUseCase.RemoveOrderItem(orderNumber, itemNumber);
+        }
     }
 }

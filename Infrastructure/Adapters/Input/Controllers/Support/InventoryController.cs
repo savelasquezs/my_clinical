@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Clinica_Herramientas_2.Application.Adapters.Input;
 using Clinica_Herramientas_2.Domain.Model;
 using Clinica_Herramientas_2.Infrastructure.Config;
+using Npgsql;
 
 namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Support
 {
@@ -68,6 +70,15 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Suppo
 
                 return Ok(new { message = "Medicamento creado exitosamente." });
             }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException dbEx)
+            {
+                // Capturar errores de base de datos (claves duplicadas, etc.)
+                if (dbEx.InnerException is Npgsql.PostgresException pgEx && pgEx.SqlState == "23505")
+                {
+                    return BadRequest(new { message = "Ya existe un recurso clínico con este ID. El ID debe ser único entre todos los recursos clínicos (medicamentos, procedimientos y ayudas diagnósticas)." });
+                }
+                return BadRequest(new { message = $"Error al guardar en la base de datos: {dbEx.Message}" });
+            }
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
@@ -99,6 +110,15 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Suppo
                 _supportInputs.UpdateMedication(medication);
                 return Ok(new { message = "Medicamento actualizado exitosamente." });
             }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException dbEx)
+            {
+                // Capturar errores de base de datos (claves duplicadas, etc.)
+                if (dbEx.InnerException is Npgsql.PostgresException pgEx && pgEx.SqlState == "23505")
+                {
+                    return BadRequest(new { message = "Ya existe un recurso clínico con este ID. El ID debe ser único entre todos los recursos clínicos (medicamentos, procedimientos y ayudas diagnósticas)." });
+                }
+                return BadRequest(new { message = $"Error al guardar en la base de datos: {dbEx.Message}" });
+            }
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
@@ -117,11 +137,24 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Suppo
                     return Unauthorized(new { message = "Usuario no autenticado." });
                 }
 
-                // Establecer el usuario actual en el use case
-                _supportInputs.SetCurrentUser(currentUser);
+                // Permitir acceso a Support y Doctor para lectura
+                if (currentUser.Role != Role.Support && currentUser.Role != Role.Doctor)
+                {
+                    return Unauthorized(new { message = "No tiene permisos para acceder a este recurso." });
+                }
 
-                var medications = _supportInputs.GetAllMedications();
+                // Usar ManageInventoryService directamente para lectura (no requiere validación de rol)
+                var medications = _supportConfig.ManageInventoryService.GetAllMedications();
                 return Ok(medications);
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException dbEx)
+            {
+                // Capturar errores de base de datos (claves duplicadas, etc.)
+                if (dbEx.InnerException is Npgsql.PostgresException pgEx && pgEx.SqlState == "23505")
+                {
+                    return BadRequest(new { message = "Ya existe un recurso clínico con este ID. El ID debe ser único entre todos los recursos clínicos (medicamentos, procedimientos y ayudas diagnósticas)." });
+                }
+                return BadRequest(new { message = $"Error al guardar en la base de datos: {dbEx.Message}" });
             }
             catch (Exception ex)
             {
@@ -156,6 +189,15 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Suppo
 
                 return Ok(new { message = "Procedimiento creado exitosamente." });
             }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException dbEx)
+            {
+                // Capturar errores de base de datos (claves duplicadas, etc.)
+                if (dbEx.InnerException is Npgsql.PostgresException pgEx && pgEx.SqlState == "23505")
+                {
+                    return BadRequest(new { message = "Ya existe un recurso clínico con este ID. El ID debe ser único entre todos los recursos clínicos (medicamentos, procedimientos y ayudas diagnósticas)." });
+                }
+                return BadRequest(new { message = $"Error al guardar en la base de datos: {dbEx.Message}" });
+            }
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
@@ -187,6 +229,15 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Suppo
                 _supportInputs.UpdateProcedure(procedure);
                 return Ok(new { message = "Procedimiento actualizado exitosamente." });
             }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException dbEx)
+            {
+                // Capturar errores de base de datos (claves duplicadas, etc.)
+                if (dbEx.InnerException is Npgsql.PostgresException pgEx && pgEx.SqlState == "23505")
+                {
+                    return BadRequest(new { message = "Ya existe un recurso clínico con este ID. El ID debe ser único entre todos los recursos clínicos (medicamentos, procedimientos y ayudas diagnósticas)." });
+                }
+                return BadRequest(new { message = $"Error al guardar en la base de datos: {dbEx.Message}" });
+            }
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
@@ -205,11 +256,24 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Suppo
                     return Unauthorized(new { message = "Usuario no autenticado." });
                 }
 
-                // Establecer el usuario actual en el use case
-                _supportInputs.SetCurrentUser(currentUser);
+                // Permitir acceso a Support y Doctor para lectura
+                if (currentUser.Role != Role.Support && currentUser.Role != Role.Doctor)
+                {
+                    return Unauthorized(new { message = "No tiene permisos para acceder a este recurso." });
+                }
 
-                var procedures = _supportInputs.GetAllProcedures();
+                // Usar ManageInventoryService directamente para lectura (no requiere validación de rol)
+                var procedures = _supportConfig.ManageInventoryService.GetAllProcedures();
                 return Ok(procedures);
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException dbEx)
+            {
+                // Capturar errores de base de datos (claves duplicadas, etc.)
+                if (dbEx.InnerException is Npgsql.PostgresException pgEx && pgEx.SqlState == "23505")
+                {
+                    return BadRequest(new { message = "Ya existe un recurso clínico con este ID. El ID debe ser único entre todos los recursos clínicos (medicamentos, procedimientos y ayudas diagnósticas)." });
+                }
+                return BadRequest(new { message = $"Error al guardar en la base de datos: {dbEx.Message}" });
             }
             catch (Exception ex)
             {
@@ -244,6 +308,15 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Suppo
 
                 return Ok(new { message = "Ayuda diagnóstica creada exitosamente." });
             }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException dbEx)
+            {
+                // Capturar errores de base de datos (claves duplicadas, etc.)
+                if (dbEx.InnerException is Npgsql.PostgresException pgEx && pgEx.SqlState == "23505")
+                {
+                    return BadRequest(new { message = "Ya existe un recurso clínico con este ID. El ID debe ser único entre todos los recursos clínicos (medicamentos, procedimientos y ayudas diagnósticas)." });
+                }
+                return BadRequest(new { message = $"Error al guardar en la base de datos: {dbEx.Message}" });
+            }
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
@@ -275,6 +348,15 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Suppo
                 _supportInputs.UpdateDiagnosticAid(diagnosticAid);
                 return Ok(new { message = "Ayuda diagnóstica actualizada exitosamente." });
             }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException dbEx)
+            {
+                // Capturar errores de base de datos (claves duplicadas, etc.)
+                if (dbEx.InnerException is Npgsql.PostgresException pgEx && pgEx.SqlState == "23505")
+                {
+                    return BadRequest(new { message = "Ya existe un recurso clínico con este ID. El ID debe ser único entre todos los recursos clínicos (medicamentos, procedimientos y ayudas diagnósticas)." });
+                }
+                return BadRequest(new { message = $"Error al guardar en la base de datos: {dbEx.Message}" });
+            }
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
@@ -293,11 +375,24 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Suppo
                     return Unauthorized(new { message = "Usuario no autenticado." });
                 }
 
-                // Establecer el usuario actual en el use case
-                _supportInputs.SetCurrentUser(currentUser);
+                // Permitir acceso a Support y Doctor para lectura
+                if (currentUser.Role != Role.Support && currentUser.Role != Role.Doctor)
+                {
+                    return Unauthorized(new { message = "No tiene permisos para acceder a este recurso." });
+                }
 
-                var diagnosticAids = _supportInputs.GetAllDiagnosticAids();
+                // Usar ManageInventoryService directamente para lectura (no requiere validación de rol)
+                var diagnosticAids = _supportConfig.ManageInventoryService.GetAllDiagnosticAids();
                 return Ok(diagnosticAids);
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException dbEx)
+            {
+                // Capturar errores de base de datos (claves duplicadas, etc.)
+                if (dbEx.InnerException is Npgsql.PostgresException pgEx && pgEx.SqlState == "23505")
+                {
+                    return BadRequest(new { message = "Ya existe un recurso clínico con este ID. El ID debe ser único entre todos los recursos clínicos (medicamentos, procedimientos y ayudas diagnósticas)." });
+                }
+                return BadRequest(new { message = $"Error al guardar en la base de datos: {dbEx.Message}" });
             }
             catch (Exception ex)
             {
