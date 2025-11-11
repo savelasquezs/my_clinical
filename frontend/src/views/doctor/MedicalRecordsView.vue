@@ -188,8 +188,18 @@ const patientMedicalRecords = computed(() => {
 
 const patientOrders = computed(() => {
   if (!selectedPatient.value) return []
-  // Las órdenes ya están filtradas por paciente desde loadPatientOrders
-  return doctorStore.orders
+  
+  // Obtener los orderNumbers de los registros médicos del paciente
+  const medicalRecordOrderNumbers = new Set(
+    patientMedicalRecords.value
+      .map(mr => mr.orderNumber)
+      .filter(orderNumber => orderNumber != null)
+  )
+  
+  // Filtrar solo las órdenes que están enlazadas a registros médicos
+  return doctorStore.orders.filter(order => 
+    medicalRecordOrderNumbers.has(order.orderNumber)
+  )
 })
 
 const loadData = async () => {

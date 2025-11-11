@@ -49,12 +49,7 @@ const router = createRouter({
       children: [
         {
           path: '',
-          redirect: '/doctor/orders'
-        },
-        {
-          path: 'orders',
-          name: 'Orders',
-          component: () => import('@/views/doctor/OrdersView.vue')
+          redirect: '/doctor/medical-records'
         },
         {
           path: 'medical-records',

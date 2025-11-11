@@ -20,7 +20,7 @@ export const ORDER_ITEM_TYPES = {
 
 export const ROUTE_BY_ROLE = {
   [ROLES.ADMIN]: '/admin/patients',
-  [ROLES.DOCTOR]: '/doctor/orders',
+  [ROLES.DOCTOR]: '/doctor/medical-records',
   [ROLES.NURSE]: '/nurse/visits',
   [ROLES.RRHH]: '/rrhh/users',
   [ROLES.SUPPORT]: '/support/inventory'
