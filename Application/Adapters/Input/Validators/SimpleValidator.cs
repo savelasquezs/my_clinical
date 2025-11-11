@@ -49,6 +49,14 @@ namespace Clinica_Herramientas_2.Application.Adapters.Input.Validators
             }
         }
 
+        protected void ValidateDateInFuture(DateTime date, string fieldName)
+        {
+            if (date <= DateTime.Now)
+            {
+                throw new ArgumentException($"{fieldName} debe ser una fecha futura.");
+            }
+        }
+
         protected void ValidateDateOfBirth(DateTime date, string fieldName, int minAge = 0, int maxAge = 150)
         {
             var age = DateTime.Now.Year - date.Year;

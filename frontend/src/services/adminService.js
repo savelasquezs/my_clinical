@@ -50,6 +50,16 @@ export const adminService = {
   },
   
   // Invoices
+  async getAllInvoices() {
+    const response = await api.get(ENDPOINTS.ADMIN.INVOICES)
+    return response.data
+  },
+  
+  async getInvoiceByNumber(invoiceNumber) {
+    const response = await api.get(ENDPOINTS.ADMIN.INVOICE_BY_NUMBER(invoiceNumber))
+    return response.data
+  },
+  
   async createInvoice(data) {
     const response = await api.post(ENDPOINTS.ADMIN.INVOICES, data)
     return response.data

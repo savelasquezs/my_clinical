@@ -30,7 +30,7 @@ namespace Clinica_Herramientas_2.Application.Adapters.Input.Builders
 
         public Patient Create(string fullname, string dni, string email, string phonenumber, DateOnly birthdate, string address,
             Gender gender, string emergencyFirstName, string emergencyLastName, string emergencyRelationship, string emergencyPhone,
-            string insuranceCompanyName, string insurancePolicyNumber, bool insuranceIsActive, DateTime insuranceExpirationDate)
+            string insuranceCompanyName, string insurancePolicyNumber, DateTime insuranceExpirationDate)
         {
             var emergencyContact = new EmergencyContact(
                 emergencyContactValidator.ValidateFirstName(emergencyFirstName),
@@ -42,7 +42,6 @@ namespace Clinica_Herramientas_2.Application.Adapters.Input.Builders
             var healthInsurance = new HealthInsurance(
                 healthInsuranceValidator.ValidateCompanyName(insuranceCompanyName),
                 healthInsuranceValidator.ValidatePolicyNumber(insurancePolicyNumber),
-                insuranceIsActive,
                 healthInsuranceValidator.ValidateExpirationDate(insuranceExpirationDate)
             );
 

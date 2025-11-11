@@ -75,7 +75,6 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Admin
                     request.EmergencyPhone,
                     request.InsuranceCompanyName,
                     request.InsurancePolicyNumber,
-                    request.InsuranceIsActive,
                     DateTime.SpecifyKind(DateTime.Parse(request.InsuranceExpirationDate), DateTimeKind.Utc)
                 );
 
@@ -119,7 +118,6 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Admin
                     request.EmergencyPhone,
                     request.InsuranceCompanyName,
                     request.InsurancePolicyNumber,
-                    request.InsuranceIsActive,
                     DateTime.SpecifyKind(DateTime.Parse(request.InsuranceExpirationDate), DateTimeKind.Utc)
                 );
                 return Ok(new { message = "Paciente actualizado exitosamente." });
@@ -259,7 +257,6 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Admin
         public string EmergencyPhone { get; set; } = string.Empty;
         public string InsuranceCompanyName { get; set; } = string.Empty;
         public string InsurancePolicyNumber { get; set; } = string.Empty;
-        public bool InsuranceIsActive { get; set; }
         public string InsuranceExpirationDate { get; set; } = string.Empty;
     }
 
@@ -274,7 +271,6 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Admin
         public string EmergencyPhone { get; set; } = string.Empty;
         public string InsuranceCompanyName { get; set; } = string.Empty;
         public string InsurancePolicyNumber { get; set; } = string.Empty;
-        public bool InsuranceIsActive { get; set; }
         public string InsuranceExpirationDate { get; set; } = string.Empty;
     }
 }

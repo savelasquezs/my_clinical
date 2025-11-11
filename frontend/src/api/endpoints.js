@@ -12,7 +12,8 @@ export const ENDPOINTS = {
     APPOINTMENTS: '/admin/appointments',
     APPOINTMENT_BY_ID: (id) => `/admin/appointments/${id}`,
     PATIENT_APPOINTMENTS: (dni) => `/admin/appointments/patient/${dni}`,
-    INVOICES: '/admin/invoices'
+    INVOICES: '/admin/invoices',
+    INVOICE_BY_NUMBER: (invoiceNumber) => `/admin/invoices/${invoiceNumber}`
   },
   
   // Doctor

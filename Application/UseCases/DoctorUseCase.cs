@@ -41,9 +41,9 @@ namespace Clinica_Herramientas_2.Application.UseCases
 
         public void SetCurrentUser(User user)
         {
-            if (user.Role != Role.Doctor)
+            if (user.Role != Role.Doctor && user.Role != Role.Admin)
             {
-                throw new Exception("Solo médicos pueden acceder a esta funcionalidad");
+                throw new Exception("Solo médicos y administradores pueden acceder a esta funcionalidad");
             }
             this.CurrentUser = user;
         }

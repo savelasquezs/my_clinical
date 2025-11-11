@@ -18,6 +18,7 @@ namespace Clinica_Herramientas_2.Application.UseCases
         private DeleteAppointment deleteAppointment;
         private CreateInvoice createInvoice;
         private IAppointmentPort appointmentPort;
+        private IInvoicePort invoicePort;
 
         internal CreatePatient CreatePatient { get => createPatient; set => createPatient = value; }
         internal UpdatePatient UpdatePatient { get => updatePatient; set => updatePatient = value; }
@@ -27,7 +28,7 @@ namespace Clinica_Herramientas_2.Application.UseCases
         internal CreateInvoice CreateInvoice { get => createInvoice; set => createInvoice = value; }
         internal User CurrentUser { get => currentUser; set => currentUser = value; }
 
-        public AdminUseCase(CreatePatient createPatient, UpdatePatient updatePatient, CreateAppointment createAppointment, UpdateAppointment updateAppointment, DeleteAppointment deleteAppointment, CreateInvoice createInvoice, ViewPatientInformation viewPatientInformation, IAppointmentPort appointmentPort)
+        public AdminUseCase(CreatePatient createPatient, UpdatePatient updatePatient, CreateAppointment createAppointment, UpdateAppointment updateAppointment, DeleteAppointment deleteAppointment, CreateInvoice createInvoice, ViewPatientInformation viewPatientInformation, IAppointmentPort appointmentPort, IInvoicePort invoicePort)
             : base(viewPatientInformation)
         {
             this.createPatient = createPatient;
@@ -37,6 +38,7 @@ namespace Clinica_Herramientas_2.Application.UseCases
             this.deleteAppointment = deleteAppointment;
             this.createInvoice = createInvoice;
             this.appointmentPort = appointmentPort;
+            this.invoicePort = invoicePort;
         }
 
         public void SetCurrentUser(User user)
@@ -60,7 +62,7 @@ namespace Clinica_Herramientas_2.Application.UseCases
 
         public void UpdateExistingPatient(Patient patient, string email, string phone, string address, 
             string emergencyFirstName, string emergencyLastName, string emergencyRelationship, string emergencyPhone,
-            string insuranceCompanyName, string insurancePolicyNumber, bool insuranceIsActive, DateTime insuranceExpirationDate)
+            string insuranceCompanyName, string insurancePolicyNumber, DateTime insuranceExpirationDate)
         {
             if (this.CurrentUser == null)
             {
@@ -72,7 +74,7 @@ namespace Clinica_Herramientas_2.Application.UseCases
             patient.SetPhone(phone);
             patient.SetAddress(address);
             patient.UpdateEmergencyContact(emergencyFirstName, emergencyLastName, emergencyRelationship, emergencyPhone);
-            patient.UpdateInsurance(insuranceCompanyName, insurancePolicyNumber, insuranceIsActive, insuranceExpirationDate);
+            patient.UpdateInsurance(insuranceCompanyName, insurancePolicyNumber, insuranceExpirationDate);
 
             updatePatient.Update(this.CurrentUser, patient);
         }
@@ -142,6 +144,16 @@ namespace Clinica_Herramientas_2.Application.UseCases
             }
             
             deleteAppointment.Delete(appointment);
+        }
+
+        public List<Invoice> GetAllInvoices()
+        {
+            if (this.CurrentUser == null)
+            {
+                throw new Exception("Debe establecer un usuario administrativo válido");
+            }
+
+            return invoicePort.FindAll();
         }
 
     }

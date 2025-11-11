@@ -26,7 +26,8 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Output.Persistence.Conf
             {
                 hi.Property(h => h.CompanyName).HasColumnName("health_insurance_company").HasMaxLength(200).IsRequired();
                 hi.Property(h => h.PolicyNumber).HasColumnName("health_insurance_policy").HasMaxLength(100).IsRequired();
-                hi.Property(h => h.IsActive).HasColumnName("health_insurance_active").IsRequired();
+                // IsActive es una propiedad calculada basada en ExpirationDate, no se almacena en BD
+                hi.Ignore(h => h.IsActive);
                 hi.Property(h => h.ExpirationDate).HasColumnName("health_insurance_expiration").IsRequired();
             });
             

@@ -98,10 +98,9 @@
             @change="validateInsuranceExpirationDate" />
           <span v-if="errors.insuranceExpirationDate" class="text-red-500 text-sm mt-1 block">{{
             errors.insuranceExpirationDate }}</span>
-        </div>
-        <div class="flex items-center">
-          <input v-model="formData.insuranceIsActive" type="checkbox" class="mr-2" />
-          <label>Activo</label>
+          <p class="text-xs text-gray-500 mt-1">
+            El estado de la póliza se calculará automáticamente según la fecha de expiración
+          </p>
         </div>
       </div>
     </div>
@@ -149,7 +148,6 @@ const formData = ref({
   emergencyPhone: '',
   insuranceCompanyName: '',
   insurancePolicyNumber: '',
-  insuranceIsActive: true,
   insuranceExpirationDate: ''
 })
 
@@ -193,7 +191,6 @@ watch(() => props.initialData, (newData) => {
     if (newData.insurance) {
       formData.value.insuranceCompanyName = newData.insurance.companyName || ''
       formData.value.insurancePolicyNumber = newData.insurance.policyNumber || ''
-      formData.value.insuranceIsActive = newData.insurance.isActive ?? true
       // Convertir fecha de expiración a formato datetime-local
       if (newData.insurance.expirationDate) {
         const date = new Date(newData.insurance.expirationDate)
@@ -341,8 +338,9 @@ const validateInsuranceExpirationDate = () => {
   }
   const expDate = new Date(expirationDate)
   const today = new Date()
-  if (expDate > today) {
-    errors.value.insuranceExpirationDate = 'La fecha de expiración no puede ser en el futuro'
+  // La fecha de expiración debe ser en el futuro
+  if (expDate <= today) {
+    errors.value.insuranceExpirationDate = 'La fecha de expiración debe ser en el futuro'
   } else {
     errors.value.insuranceExpirationDate = ''
   }
@@ -369,6 +367,8 @@ const handleSubmit = () => {
   if (props.mode === 'edit') {
     delete data.dni
   }
+  // Eliminar insuranceIsActive ya que ahora se calcula automáticamente en el backend
+  delete data.insuranceIsActive
   emit('submit', data)
 }
 </script>

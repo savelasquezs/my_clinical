@@ -11,6 +11,7 @@ namespace Clinica_Herramientas_2.Domain.Ports
     {
         public Invoice? FindByNumber(int invoiceNumber);
         public List<Invoice> FindByPatient(string patientDni);
+        public List<Invoice> FindAll();
         public void Save(Invoice invoice);
         public decimal GetAnnualCopaymentAccumulated(string patientDni, int year);
         public void UpdateAnnualCopaymentAccumulated(string patientDni, int year, decimal newAmount);

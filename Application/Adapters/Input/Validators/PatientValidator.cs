@@ -87,7 +87,7 @@ namespace Clinica_Herramientas_2.Application.Adapters.Input.Validators
 
         public DateTime ValidateInsuranceExpirationDate(DateTime expirationDate)
         {
-            ValidateDateNotInFuture(expirationDate, "InsuranceExpirationDate");
+            ValidateDateInFuture(expirationDate, "InsuranceExpirationDate");
             return expirationDate;
         }
     }

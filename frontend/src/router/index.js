@@ -34,6 +34,11 @@ const router = createRouter({
           path: 'invoices',
           name: 'Invoices',
           component: () => import('@/views/admin/InvoicesView.vue')
+        },
+        {
+          path: 'invoices/pending',
+          name: 'PendingInvoices',
+          component: () => import('@/views/admin/PendingInvoicesView.vue')
         }
       ]
     },

@@ -11,26 +11,26 @@
           >
             {{ column.label }}
           </th>
-          <th v-if="hasActions" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+          <th v-if="hasActionsColumn" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
             Acciones
           </th>
         </tr>
       </thead>
       <tbody class="bg-white divide-y divide-gray-200">
         <tr v-if="loading">
-          <td :colspan="columns.length + (hasActions ? 1 : 0)" class="px-6 py-12 text-center">
+          <td :colspan="columns.length + (hasActionsColumn ? 1 : 0)" class="px-6 py-12 text-center">
             <LoadingSpinner />
           </td>
         </tr>
         <tr v-else-if="!data || data.length === 0">
-          <td :colspan="columns.length + (hasActions ? 1 : 0)" class="px-6 py-12">
+          <td :colspan="columns.length + (hasActionsColumn ? 1 : 0)" class="px-6 py-12">
             <EmptyState :title="emptyTitle" :message="emptyMessage" />
           </td>
         </tr>
         <tr 
           v-else 
           v-for="(row, index) in data" 
-          :key="index" 
+          :key="getRowKey(row, index)" 
           class="hover:bg-gray-50"
           :class="{ 'cursor-pointer': clickable }"
           @click="clickable ? $emit('row-click', row) : null"
@@ -42,10 +42,10 @@
             :class="column.class"
           >
             <slot :name="`cell-${column.key}`" :row="row" :value="row[column.key]">
-              {{ formatCellValue(row[column.key], column) }}
+              {{ formatCellValue(row[column.key], column, row) }}
             </slot>
           </td>
-          <td v-if="hasActions" class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+          <td v-if="hasActionsColumn" class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
             <slot name="actions" :row="row" :index="index">
               <button
                 v-if="showEdit"
@@ -106,19 +106,41 @@ const props = defineProps({
   clickable: {
     type: Boolean,
     default: false
+  },
+  hasActions: {
+    type: Boolean,
+    default: undefined // undefined = auto-detect from showEdit/showDelete
   }
 })
 
+const slots = defineSlots()
+
 defineEmits(['edit', 'delete', 'row-click'])
 
-const hasActions = computed(() => props.showEdit || props.showDelete)
+const hasActionsColumn = computed(() => {
+  if (props.hasActions !== undefined) {
+    return props.hasActions
+  }
+  // Auto-detect: si hay slot de acciones o showEdit/showDelete
+  return props.showEdit || props.showDelete || !!slots.actions
+})
 
-const formatCellValue = (value, column) => {
+const formatCellValue = (value, column, row) => {
   if (value === null || value === undefined) return '-'
   if (column.formatter && typeof column.formatter === 'function') {
-    return column.formatter(value)
+    return column.formatter(value, row)
   }
   return value
+}
+
+const getRowKey = (row, index) => {
+  // Intentar usar un ID único si existe
+  if (row.id !== undefined) return row.id
+  if (row.dni !== undefined) return row.dni
+  if (row.orderNumber !== undefined) return `order-${row.orderNumber}`
+  if (row.invoiceNumber !== undefined) return `invoice-${row.invoiceNumber}`
+  // Fallback al índice
+  return index
 }
 </script>
 

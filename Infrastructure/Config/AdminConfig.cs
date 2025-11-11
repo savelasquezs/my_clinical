@@ -61,7 +61,8 @@ namespace Clinica_Herramientas_2.Infrastructure.Config
                 DeleteAppointmentService,
                 CreateInvoiceService,
                 ViewPatientInformationService,
-                AppointmentPort
+                AppointmentPort,
+                InvoicePort
             );
             
             // Builders

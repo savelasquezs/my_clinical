@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Clinica_Herramientas_2.Domain.Model;
 using Clinica_Herramientas_2.Domain.Ports;
+using System.Linq;
 
 namespace Clinica_Herramientas_2.Infrastructure.Adapters.Output.Persistence
 {
@@ -15,11 +16,49 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Output.Persistence
         
         public Invoice? FindByInvoiceNumber(int invoiceNumber)
         {
-            return context.Invoices
+            var invoice = context.Invoices
                 .Include(i => i.Patient)
                 .Include(i => i.Doctor)
                 .Include(i => i.Orders)
                 .FirstOrDefault(i => i.InvoiceNumber == invoiceNumber);
+
+            if (invoice != null)
+            {
+                // Cargar los items de cada orden con sus relaciones específicas
+                foreach (var order in invoice.Orders)
+                {
+                    // Cargar MedicationOrderItems con Medication
+                    var medicationItems = context.Set<MedicationOrderItem>()
+                        .Include(m => m.Medication)
+                        .Where(i => i.OrderNumber == order.OrderNumber)
+                        .ToList();
+
+                    // Cargar ProcedureOrderItems con Procedure
+                    var procedureItems = context.Set<ProcedureOrderItem>()
+                        .Include(p => p.Procedure)
+                        .Where(i => i.OrderNumber == order.OrderNumber)
+                        .ToList();
+
+                    // Cargar DiagnosticAidOrderItems con DiagnosticAid
+                    var diagnosticAidItems = context.Set<DiagnosticAidOrderItem>()
+                        .Include(d => d.DiagnosticAid)
+                        .Where(i => i.OrderNumber == order.OrderNumber)
+                        .ToList();
+
+                    // Reemplazar los items base con los items específicos que tienen las relaciones cargadas
+                    var allItems = new List<OrderItem>();
+                    allItems.AddRange(medicationItems);
+                    allItems.AddRange(procedureItems);
+                    allItems.AddRange(diagnosticAidItems);
+                    order.Items.Clear();
+                    foreach (var item in allItems.OrderBy(i => i.ItemNumber))
+                    {
+                        order.Items.Add(item);
+                    }
+                }
+            }
+
+            return invoice;
         }
         
         public void Save(Invoice invoice)
@@ -42,11 +81,49 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Output.Persistence
         
         public List<Invoice> FindAll()
         {
-            return context.Invoices
+            var invoices = context.Invoices
                 .Include(i => i.Patient)
                 .Include(i => i.Doctor)
                 .Include(i => i.Orders)
                 .ToList();
+
+            // Cargar los items de cada orden con sus relaciones específicas
+            foreach (var invoice in invoices)
+            {
+                foreach (var order in invoice.Orders)
+                {
+                    // Cargar MedicationOrderItems con Medication
+                    var medicationItems = context.Set<MedicationOrderItem>()
+                        .Include(m => m.Medication)
+                        .Where(i => i.OrderNumber == order.OrderNumber)
+                        .ToList();
+
+                    // Cargar ProcedureOrderItems con Procedure
+                    var procedureItems = context.Set<ProcedureOrderItem>()
+                        .Include(p => p.Procedure)
+                        .Where(i => i.OrderNumber == order.OrderNumber)
+                        .ToList();
+
+                    // Cargar DiagnosticAidOrderItems con DiagnosticAid
+                    var diagnosticAidItems = context.Set<DiagnosticAidOrderItem>()
+                        .Include(d => d.DiagnosticAid)
+                        .Where(i => i.OrderNumber == order.OrderNumber)
+                        .ToList();
+
+                    // Reemplazar los items base con los items específicos que tienen las relaciones cargadas
+                    var allItems = new List<OrderItem>();
+                    allItems.AddRange(medicationItems);
+                    allItems.AddRange(procedureItems);
+                    allItems.AddRange(diagnosticAidItems);
+                    order.Items.Clear();
+                    foreach (var item in allItems.OrderBy(i => i.ItemNumber))
+                    {
+                        order.Items.Add(item);
+                    }
+                }
+            }
+
+            return invoices;
         }
         
         public List<Invoice> FindByPatient(string patientDni)

@@ -55,13 +55,13 @@ namespace Clinica_Herramientas_2.Domain.Model
             this.emergencyContact.Update(firstname, lastname, relationship, phoneNumber);
         }
         
-        internal void UpdateInsurance(string companyName, string policyNumber, bool isActive, DateTime expirationDate)
+        internal void UpdateInsurance(string companyName, string policyNumber, DateTime expirationDate)
         {
             if (this.insurance == null)
             {
                 throw new InvalidOperationException("El seguro de salud no está inicializado.");
             }
-            this.insurance.Update(companyName, policyNumber, isActive, expirationDate);
+            this.insurance.Update(companyName, policyNumber, expirationDate);
         }
     }
 
@@ -101,14 +101,12 @@ namespace Clinica_Herramientas_2.Domain.Model
     {
         private string _companyName;
         private string _policyNumber;
-        private bool _isActive;
         private DateTime _expirationDate;
         
-        public HealthInsurance(string companyName, string policyNumber, bool isActive, DateTime expirationDate)
+        public HealthInsurance(string companyName, string policyNumber, DateTime expirationDate)
         {
             _companyName = companyName.Trim();
             _policyNumber = policyNumber.Trim();
-            _isActive = isActive;
             _expirationDate = expirationDate;
         }
 
@@ -117,14 +115,22 @@ namespace Clinica_Herramientas_2.Domain.Model
 
         public string CompanyName { get => _companyName; private set => _companyName = value; }
         public string PolicyNumber { get => _policyNumber; private set => _policyNumber = value; }
-        public bool IsActive { get => _isActive; private set => _isActive = value; }
+        
+        /// <summary>
+        /// Propiedad calculada que determina si la póliza está activa basándose en la fecha de expiración
+        /// La póliza está activa solo si la fecha de expiración es estrictamente mayor que hoy
+        /// </summary>
+        public bool IsActive 
+        { 
+            get => _expirationDate.Date > DateTime.Today;
+        }
+        
         public DateTime ExpirationDate { get => _expirationDate; private set => _expirationDate = value; }
         
-        internal void Update(string companyName, string policyNumber, bool isActive, DateTime expirationDate)
+        internal void Update(string companyName, string policyNumber, DateTime expirationDate)
         {
             this._companyName = companyName.Trim();
             this._policyNumber = policyNumber.Trim();
-            this._isActive = isActive;
             this._expirationDate = expirationDate;
         }
     }
