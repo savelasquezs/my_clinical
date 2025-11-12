@@ -26,7 +26,7 @@ namespace Clinica_Herramientas_2.Infrastructure.Config
         
         public DoctorConfig DoctorConfig => doctorConfig ??= new DoctorConfig(
             ports.OrderPort, ports.InventoryPort, ports.MedicalRecordPort,
-            ports.PatientPort, ports.UserPort, ports.AppointmentPort
+            ports.PatientPort, ports.UserPort, ports.AppointmentPort, ports.NurseVisitPort
         );
         
         public NurseConfig NurseConfig => nurseConfig ??= new NurseConfig(

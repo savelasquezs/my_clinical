@@ -51,7 +51,10 @@
       <p class="text-gray-900 whitespace-pre-wrap">{{ medicalRecord.diagnosis }}</p>
     </div>
 
-    <div class="flex justify-end pt-4 border-t">
+    <div class="flex justify-end gap-3 pt-4 border-t">
+      <button @click="$emit('edit', medicalRecord)" class="btn btn-primary">
+        Editar
+      </button>
       <button @click="$emit('close')" class="btn btn-secondary">
         Cerrar
       </button>
@@ -69,7 +72,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['close', 'view-order'])
+const emit = defineEmits(['close', 'view-order', 'edit'])
 
 const { formatDate } = useDate()
 </script>

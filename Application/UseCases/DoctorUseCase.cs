@@ -15,6 +15,7 @@ namespace Clinica_Herramientas_2.Application.UseCases
         private AddOrderItem addOrderItem;
         private UpdateOrderItem updateOrderItem;
         private CreateMedicalRecord createMedicalRecord;
+        private UpdateMedicalRecord updateMedicalRecord;
         private ViewMedicalHistory viewMedicalHistory;
         private Domain.Ports.IOrderPort orderPort;
 
@@ -23,11 +24,12 @@ namespace Clinica_Herramientas_2.Application.UseCases
         internal AddOrderItem AddOrderItem { get => addOrderItem; set => addOrderItem = value; }
         internal UpdateOrderItem UpdateOrderItemService { get => updateOrderItem; set => updateOrderItem = value; }
         internal CreateMedicalRecord CreateMedicalRecord { get => createMedicalRecord; set => createMedicalRecord = value; }
+        internal UpdateMedicalRecord UpdateMedicalRecordService { get => updateMedicalRecord; set => updateMedicalRecord = value; }
         internal ViewMedicalHistory ViewMedicalHistory { get => viewMedicalHistory; set => viewMedicalHistory = value; }
         internal Domain.Ports.IOrderPort OrderPort { get => orderPort; set => orderPort = value; }
         internal User CurrentUser { get => currentUser; set => currentUser = value; }
 
-        public DoctorUseCase(CreateOrder createOrder, CreateOrderItem createOrderItem, AddOrderItem addOrderItem, UpdateOrderItem updateOrderItem, CreateMedicalRecord createMedicalRecord, ViewMedicalHistory viewMedicalHistory, ViewPatientInformation viewPatientInformation, Domain.Ports.IOrderPort orderPort)
+        public DoctorUseCase(CreateOrder createOrder, CreateOrderItem createOrderItem, AddOrderItem addOrderItem, UpdateOrderItem updateOrderItem, CreateMedicalRecord createMedicalRecord, UpdateMedicalRecord updateMedicalRecord, ViewMedicalHistory viewMedicalHistory, ViewPatientInformation viewPatientInformation, Domain.Ports.IOrderPort orderPort)
             : base(viewPatientInformation)
         {
             this.createOrder = createOrder;
@@ -35,6 +37,7 @@ namespace Clinica_Herramientas_2.Application.UseCases
             this.addOrderItem = addOrderItem;
             this.updateOrderItem = updateOrderItem;
             this.createMedicalRecord = createMedicalRecord;
+            this.updateMedicalRecord = updateMedicalRecord;
             this.viewMedicalHistory = viewMedicalHistory;
             this.orderPort = orderPort;
         }
@@ -172,6 +175,16 @@ namespace Clinica_Herramientas_2.Application.UseCases
             }
 
             orderPort.RemoveItem(orderNumber, itemNumber);
+        }
+
+        public void UpdateMedicalRecord(int id, DateTime date, string consultationReason, string symptoms, string diagnosis)
+        {
+            if (this.CurrentUser == null)
+            {
+                throw new Exception("Debe establecer un médico válido");
+            }
+
+            updateMedicalRecord.Update(id, date, consultationReason, symptoms, diagnosis, this.CurrentUser);
         }
 
     }

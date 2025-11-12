@@ -24,15 +24,19 @@ export const ENDPOINTS = {
     ADD_ORDER_ITEM: (orderNumber) => `/doctor/orders/${orderNumber}/items`,
     UPDATE_ORDER_ITEM: (orderNumber, itemNumber) => `/doctor/orders/${orderNumber}/items/${itemNumber}`,
     DELETE_ORDER_ITEM: (orderNumber, itemNumber) => `/doctor/orders/${orderNumber}/items/${itemNumber}`,
+    NURSE_VISITS_BY_ORDER: (orderNumber) => `/doctor/orders/${orderNumber}/nurse-visits`,
     MEDICAL_RECORDS: '/doctor/medical-records',
     ALL_MEDICAL_RECORDS: '/doctor/medical-records',
+    UPDATE_MEDICAL_RECORD: (id) => `/doctor/medical-records/${id}`,
     MEDICAL_HISTORY: (dni) => `/doctor/medical-records/patient/${dni}`
   },
   
   // Nurse
   NURSE: {
     VISITS: '/nurse/visits',
-    PATIENT_INFO: (dni) => `/nurse/visits/patient/${dni}`
+    PATIENT_INFO: (dni) => `/nurse/visits/patient/${dni}`,
+    AVAILABLE_ORDERS: '/nurse/visits/available-orders',
+    ORDER_DETAILS: (orderNumber) => `/nurse/visits/orders/${orderNumber}`
   },
   
   // RRHH

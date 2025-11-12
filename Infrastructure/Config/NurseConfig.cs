@@ -45,7 +45,9 @@ namespace Clinica_Herramientas_2.Infrastructure.Config
             // Caso de uso
             NurseUseCase = new NurseUseCase(
                 CreateNurseVisitService,
-                ViewPatientInformationService
+                ViewPatientInformationService,
+                OrderPort,
+                NurseVisitPort
             );
             
             // Builders

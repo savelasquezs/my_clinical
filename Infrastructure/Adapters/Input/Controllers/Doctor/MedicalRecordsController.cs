@@ -147,6 +147,58 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Docto
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpPut("{id}")]
+        public IActionResult UpdateMedicalRecord(int id, [FromBody] UpdateMedicalRecordRequest request)
+        {
+            try
+            {
+                // Obtener el usuario actual desde los headers
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                // Establecer el usuario actual en el use case
+                _doctorInputs.SetCurrentUser(currentUser);
+
+                _doctorInputs.UpdateMedicalRecord(
+                    id,
+                    DateTime.SpecifyKind(DateTime.Parse(request.Date), DateTimeKind.Utc),
+                    request.ConsultationReason,
+                    request.Symptoms,
+                    request.Diagnosis
+                );
+
+                // Obtener el registro actualizado para retornarlo
+                var updatedRecord = _doctorConfig.MedicalRecordPort.FindById(id);
+                if (updatedRecord == null)
+                {
+                    return NotFound(new { message = "Registro médico no encontrado." });
+                }
+
+                var medicalRecordDto = new
+                {
+                    id = updatedRecord.Id,
+                    date = updatedRecord.Date,
+                    patientDni = updatedRecord.Patient.Dni,
+                    patientName = updatedRecord.Patient.Fullname,
+                    doctorDni = updatedRecord.Doctor.Dni,
+                    doctorName = updatedRecord.Doctor.Fullname,
+                    consultationReason = updatedRecord.ConsultationReason,
+                    symptoms = updatedRecord.Symptoms,
+                    diagnosis = updatedRecord.Diagnosis,
+                    orderNumber = updatedRecord.Order?.OrderNumber
+                };
+
+                return Ok(medicalRecordDto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 
     public class CreateMedicalRecordRequest
@@ -157,6 +209,14 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Docto
         public string Symptoms { get; set; } = string.Empty;
         public string Diagnosis { get; set; } = string.Empty;
         public int? OrderNumber { get; set; }
+    }
+
+    public class UpdateMedicalRecordRequest
+    {
+        public string Date { get; set; } = string.Empty;
+        public string ConsultationReason { get; set; } = string.Empty;
+        public string Symptoms { get; set; } = string.Empty;
+        public string Diagnosis { get; set; } = string.Empty;
     }
 }
 

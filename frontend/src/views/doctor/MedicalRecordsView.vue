@@ -85,20 +85,42 @@
 
     <!-- Modal para crear registro médico -->
     <CommonModal :is-open="isCreateModalOpen" title="Crear Registro Médico" size="xl" @close="closeCreateModal">
-      <MedicalRecordForm @submit="handleCreateMedicalRecord" @cancel="closeCreateModal" />
+      <MedicalRecordForm 
+        :follow-up-message="followUpMessage"
+        :initial-data="initialFormData"
+        @submit="handleCreateMedicalRecord" 
+        @cancel="closeCreateModal" 
+      />
     </CommonModal>
 
     <!-- Modal para ver detalle de registro médico -->
     <CommonModal v-if="selectedMedicalRecord" :is-open="isMedicalRecordDetailOpen && !!selectedMedicalRecord"
       title="Detalle del Registro Médico" size="lg" @close="closeMedicalRecordDetail">
       <MedicalRecordDetail v-if="selectedMedicalRecord" :medical-record="selectedMedicalRecord"
-        @view-order="handleViewOrderFromRecord" @close="closeMedicalRecordDetail" />
+        @view-order="handleViewOrderFromRecord" @edit="handleEditMedicalRecord" @close="closeMedicalRecordDetail" />
+    </CommonModal>
+
+    <!-- Modal para editar registro médico -->
+    <CommonModal :is-open="isEditModalOpen" title="Editar Registro Médico" size="xl" @close="closeEditModal">
+      <MedicalRecordForm 
+        v-if="editingRecord" 
+        mode="edit" 
+        :initial-data="editingRecord"
+        @update="handleUpdateMedicalRecord" 
+        @cancel="closeEditModal" 
+      />
     </CommonModal>
 
     <!-- Modal para ver detalle de orden -->
     <CommonModal :is-open="isOrderDetailOpen" title="Detalle de la Orden" size="xl" @close="closeOrderDetail">
-      <OrderDetail v-if="selectedOrder" :order="selectedOrder" @close="closeOrderDetail"
-        @updated="handleOrderUpdated" />
+      <OrderDetail 
+        v-if="selectedOrder" 
+        :order="selectedOrder" 
+        :patient-dni="selectedPatient?.dni || ''"
+        @close="closeOrderDetail"
+        @updated="handleOrderUpdated"
+        @create-record="handleCreateRecordFromDiagnosticResult"
+      />
     </CommonModal>
   </div>
 </template>
@@ -127,7 +149,11 @@ const { formatDate } = useDate()
 
 const isCreateModalOpen = ref(false)
 const isMedicalRecordDetailOpen = ref(false)
+const isEditModalOpen = ref(false)
 const isOrderDetailOpen = ref(false)
+const editingRecord = ref(null)
+const followUpMessage = ref('')
+const initialFormData = ref(null)
 
 const selectedPatient = computed(() => doctorStore.selectedPatient)
 const selectedMedicalRecord = computed(() => doctorStore.selectedMedicalRecord)
@@ -230,11 +256,17 @@ const handleOrderUpdated = async () => {
 }
 
 const openCreateModal = () => {
+  followUpMessage.value = ''
+  initialFormData.value = null
   isCreateModalOpen.value = true
 }
 
 const closeCreateModal = () => {
   isCreateModalOpen.value = false
+  setTimeout(() => {
+    followUpMessage.value = ''
+    initialFormData.value = null
+  }, 300)
 }
 
 const closeMedicalRecordDetail = () => {
@@ -289,6 +321,61 @@ const handleCreateMedicalRecord = async (data) => {
   } catch (error) {
     // Error handled by interceptor
   }
+}
+
+const handleEditMedicalRecord = (record) => {
+  editingRecord.value = record
+  isMedicalRecordDetailOpen.value = false
+  isEditModalOpen.value = true
+}
+
+const handleUpdateMedicalRecord = async (data) => {
+  try {
+    if (!editingRecord.value) return
+
+    await doctorService.updateMedicalRecord(editingRecord.value.id, data)
+
+    toast.success('Registro médico actualizado exitosamente')
+    closeEditModal()
+
+    // Recargar datos
+    await loadData()
+
+    // Si hay un paciente seleccionado, recargar sus registros
+    if (selectedPatient.value) {
+      // Los registros se recargan automáticamente porque patientMedicalRecords es computed
+    }
+  } catch (error) {
+    // Error handled by interceptor
+  }
+}
+
+const closeEditModal = () => {
+  isEditModalOpen.value = false
+  setTimeout(() => {
+    editingRecord.value = null
+  }, 300)
+}
+
+const handleCreateRecordFromDiagnosticResult = (data) => {
+  // Cerrar el modal de orden
+  closeOrderDetail()
+  
+  // Preparar mensaje de seguimiento
+  const diagnosticAidName = data.diagnosticAid?.name || 'Ayuda Diagnóstica'
+  followUpMessage.value = `Seguimiento de resultado de ${diagnosticAidName}. Se recomienda crear un nuevo registro médico con el diagnóstico actualizado basado en los resultados obtenidos.`
+  
+  // Prellenar patientDni si está disponible
+  if (data.patientDni) {
+    initialFormData.value = {
+      patientDni: data.patientDni
+    }
+  }
+  
+  // Abrir modal de creación con mensaje de seguimiento
+  setTimeout(() => {
+    isCreateModalOpen.value = true
+  }, 300)
 }
 
 onMounted(() => {

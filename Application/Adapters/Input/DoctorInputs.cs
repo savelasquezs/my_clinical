@@ -97,5 +97,10 @@ namespace Clinica_Herramientas_2.Application.Adapters.Input
         {
             doctorUseCase.RemoveOrderItem(orderNumber, itemNumber);
         }
+
+        public void UpdateMedicalRecord(int id, DateTime date, string consultationReason, string symptoms, string diagnosis)
+        {
+            doctorUseCase.UpdateMedicalRecord(id, date, consultationReason, symptoms, diagnosis);
+        }
     }
 }

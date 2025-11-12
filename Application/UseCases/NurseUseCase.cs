@@ -1,5 +1,6 @@
 using Clinica_Herramientas_2.Domain.Model;
 using Clinica_Herramientas_2.Domain.Services;
+using Clinica_Herramientas_2.Domain.Ports;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,14 +12,18 @@ namespace Clinica_Herramientas_2.Application.UseCases
     public class NurseUseCase : BaseUseCase
     {
         private CreateNurseVisit createNurseVisit;
+        private IOrderPort orderPort;
+        private INurseVisit nurseVisitPort;
 
         internal CreateNurseVisit CreateNurseVisit { get => createNurseVisit; set => createNurseVisit = value; }
         internal User CurrentUser { get => currentUser; set => currentUser = value; }
 
-        public NurseUseCase(CreateNurseVisit createNurseVisit, ViewPatientInformation viewPatientInformation)
+        public NurseUseCase(CreateNurseVisit createNurseVisit, ViewPatientInformation viewPatientInformation, IOrderPort orderPort, INurseVisit nurseVisitPort)
             : base(viewPatientInformation)
         {
             this.createNurseVisit = createNurseVisit;
+            this.orderPort = orderPort;
+            this.nurseVisitPort = nurseVisitPort;
         }
 
         public void SetCurrentUser(User user)
@@ -63,6 +68,42 @@ namespace Clinica_Herramientas_2.Application.UseCases
             }
 
             return new VitalData(bloodPressure, temperature, pulse, oxygenLevel);
+        }
+
+        public List<Order> GetAvailableOrdersForNurse()
+        {
+            if (this.CurrentUser == null)
+            {
+                throw new Exception("Debe establecer una enfermera válida");
+            }
+
+            return orderPort.FindOrdersWithNurseVisitProcedure();
+        }
+
+        public Order GetOrderDetailsForNurse(int orderNumber)
+        {
+            if (this.CurrentUser == null)
+            {
+                throw new Exception("Debe establecer una enfermera válida");
+            }
+
+            var order = orderPort.FindByNumber(orderNumber);
+            if (order == null)
+            {
+                throw new Exception($"La orden {orderNumber} no existe.");
+            }
+
+            // Obtener PerformedProcedures y AdministeredMedications para cada item
+            foreach (var item in order.Items)
+            {
+                var performedProcedures = nurseVisitPort.GetPerformedProceduresByOrderItem(item.OrderNumber, item.ItemNumber);
+                var administeredMedications = nurseVisitPort.GetAdministeredMedicationsByOrderItem(item.OrderNumber, item.ItemNumber);
+                
+                // Esta información se puede usar para calcular progreso en el frontend
+                // Por ahora solo cargamos los datos, el cálculo se hará en el frontend
+            }
+
+            return order;
         }
     }
 }

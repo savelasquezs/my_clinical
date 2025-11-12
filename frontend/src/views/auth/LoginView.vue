@@ -82,8 +82,21 @@ const handleLogin = async () => {
     const defaultRoute = authService.getDefaultRoute(user.role)
     router.push(defaultRoute)
   } catch (err) {
-    error.value = err.response?.data?.message || 'Error al iniciar sesión'
-    toast.error(error.value)
+    // Manejar diferentes tipos de errores
+    if (err.response) {
+      // Error con respuesta del servidor
+      error.value = err.response.data?.message || 'Usuario o contraseña incorrectos'
+    } else if (err.request) {
+      // Error de conexión (servidor no responde)
+      error.value = 'No se pudo conectar con el servidor. Verifica que el backend esté corriendo.'
+      console.error('Error de conexión:', err.request)
+    } else {
+      // Error inesperado
+      error.value = 'Error inesperado al iniciar sesión'
+      console.error('Error inesperado:', err.message)
+    }
+    // No mostrar toast aquí porque el interceptor ya no lo hace para login
+    // pero sí mostramos el error en el formulario
   } finally {
     loading.value = false
   }

@@ -14,6 +14,12 @@ namespace Clinica_Herramientas_2.Domain.Services
 
         public Order Create(int orderNumber, DateTime creationDate)
         {
+            // Validar máximo 6 dígitos
+            if (orderNumber > 999999)
+            {
+                throw new Exception("El número de orden no puede tener más de 6 dígitos.");
+            }
+
             // Unicidad de número de orden
             if (orderPort.FindByNumber(orderNumber) != null)
             {

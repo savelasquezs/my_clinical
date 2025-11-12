@@ -41,25 +41,42 @@ api.interceptors.response.use(
   (error) => {
     const toast = useToast()
     
+    // Excluir el endpoint de login del manejo automático de errores
+    // para que LoginView pueda manejar el error específicamente
+    const isLoginEndpoint = error.config?.url?.includes('/auth/login')
+    
     if (error.response) {
       const { status, data } = error.response
       
       // Si es 401, limpiar auth y redirigir a login
       if (status === 401) {
-        const authStore = useAuthStore()
-        authStore.logout()
-        window.location.href = '/login'
-        toast.error('Sesión expirada. Por favor, inicia sesión nuevamente.')
+        // No redirigir si ya estamos en login (evitar loop)
+        if (!isLoginEndpoint) {
+          const authStore = useAuthStore()
+          authStore.logout()
+          window.location.href = '/login'
+          toast.error('Sesión expirada. Por favor, inicia sesión nuevamente.')
+        }
         return Promise.reject(error)
       }
       
-      // Mostrar mensaje de error del servidor
-      const message = data?.message || 'Ha ocurrido un error'
-      toast.error(message)
+      // No mostrar toast automático para errores de login
+      // LoginView manejará el error y mostrará el mensaje apropiado
+      if (!isLoginEndpoint) {
+        // Mostrar mensaje de error del servidor
+        const message = data?.message || 'Ha ocurrido un error'
+        toast.error(message)
+      }
     } else if (error.request) {
-      toast.error('No se pudo conectar con el servidor')
+      // No mostrar toast automático para errores de conexión en login
+      if (!isLoginEndpoint) {
+        toast.error('No se pudo conectar con el servidor')
+      }
     } else {
-      toast.error('Error inesperado')
+      // No mostrar toast automático para errores inesperados en login
+      if (!isLoginEndpoint) {
+        toast.error('Error inesperado')
+      }
     }
     
     return Promise.reject(error)

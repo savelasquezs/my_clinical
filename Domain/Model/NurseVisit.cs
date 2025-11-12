@@ -35,7 +35,12 @@ namespace Clinica_Herramientas_2.Domain.Model
         }
 
         // Constructor protegido para EF Core
-        protected NurseVisit() : base(null!, "", "", DateTime.MinValue) { }
+        protected NurseVisit() : base()
+        {
+            // No llamar al constructor base con null para evitar validación durante materialización
+            this.administeredMedications = new List<AdministeredMedication>();
+            this.visitTime = DateTime.MinValue;
+        }
 
         public DateTime VisitTime { get => visitTime; private set => visitTime = value; }
         public new OrderItem OrderItem { get; internal set; }

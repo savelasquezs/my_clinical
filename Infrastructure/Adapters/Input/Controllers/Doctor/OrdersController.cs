@@ -206,6 +206,53 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Docto
             }
         }
 
+        [HttpGet("{orderNumber}/nurse-visits")]
+        public IActionResult GetNurseVisitsByOrder(int orderNumber)
+        {
+            try
+            {
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                _doctorInputs.SetCurrentUser(currentUser);
+
+                var nurseVisits = _doctorConfig.NurseVisitPort.FindByOrderNumber(orderNumber);
+
+                var nurseVisitDtos = nurseVisits.Select(nv => new
+                {
+                    id = nv.Id,
+                    visitTime = nv.VisitTime,
+                    nurseName = nv.Nurse?.Fullname ?? "Enfermera no encontrada",
+                    patientName = nv.Patient?.Fullname ?? "Paciente no encontrado",
+                    vitalData = nv.VitalData != null ? new
+                    {
+                        bloodPressure = nv.VitalData.BloodPressure,
+                        temperature = nv.VitalData.Temperature,
+                        pulse = nv.VitalData.Pulse,
+                        oxygenLevel = nv.VitalData.OxygenLevel
+                    } : null,
+                    testsPerformed = nv.TestsPerformed,
+                    notes = nv.Notes,
+                    administeredMedications = nv.AdministeredMedications?.Select(am => new
+                    {
+                        medicationName = am.Medication?.Name ?? "Medicamento no encontrado",
+                        dose = am.Dose,
+                        administrationRoute = am.AdministrationRoute,
+                        performedAt = am.PerformedAt
+                    }).ToList()
+                }).ToList();
+
+                return Ok(nurseVisitDtos);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         private object MapOrderToDto(Order order)
         {
             if (order == null)

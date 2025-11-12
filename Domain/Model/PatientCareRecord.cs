@@ -7,10 +7,10 @@ namespace Clinica_Herramientas_2.Domain.Model
     public class PatientCareRecord
     {
         private int id;
-        private readonly OrderItem orderItem;
-        private readonly string testsPerformed;
-        private readonly string notes;
-        private readonly DateTime performedAt;
+        private OrderItem? orderItem;
+        private string testsPerformed;
+        private string notes;
+        private DateTime performedAt;
         
         public PatientCareRecord(OrderItem orderItem, string testsPerformed, string notes, DateTime performedAt)
         {
@@ -23,17 +23,23 @@ namespace Clinica_Herramientas_2.Domain.Model
         }
 
         // Constructor protegido para EF Core
-        protected PatientCareRecord() : this(null!, "", "", DateTime.MinValue) { }
+        protected PatientCareRecord()
+        {
+            // No llamar al constructor público para evitar validación durante materialización
+            this.testsPerformed = "";
+            this.notes = "";
+            this.performedAt = DateTime.MinValue;
+        }
 
         public int Id { get => id; private set => id = value; }
-        public OrderItem OrderItem { get => orderItem; }
+        public OrderItem? OrderItem { get => orderItem; }
         public string TestsPerformed { get => testsPerformed; }
         public string Notes { get => notes; }
         public DateTime PerformedAt { get => performedAt; }
     }
     public class AdministeredMedication : PatientCareRecord
     {
-        private readonly Medication medication;
+        private Medication? medication;
         private string dose;
         private string administrationRoute;
         
@@ -49,9 +55,14 @@ namespace Clinica_Herramientas_2.Domain.Model
         }
 
         // Constructor protegido para EF Core
-        protected AdministeredMedication() : base(null!, "", "", DateTime.MinValue) { }
+        protected AdministeredMedication()
+        {
+            // No llamar al constructor base para evitar validación durante materialización
+            this.dose = "";
+            this.administrationRoute = "";
+        }
 
-        public Medication Medication { get => medication; }
+        public Medication Medication { get => medication!; }
         public string Dose { get => dose; private set => dose = value; }
         public string AdministrationRoute { get => administrationRoute; private set => administrationRoute = value; }
     }
@@ -63,7 +74,9 @@ namespace Clinica_Herramientas_2.Domain.Model
         }
 
         // Constructor protegido para EF Core
-        protected PerformedProcedure() : base(null!, "", "", DateTime.MinValue) { }
+        protected PerformedProcedure() : base()
+        {
+        }
     }
 
 }

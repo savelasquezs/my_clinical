@@ -33,6 +33,11 @@ export const doctorService = {
     return response.data
   },
   
+  async getNurseVisitsByOrder(orderNumber) {
+    const response = await api.get(ENDPOINTS.DOCTOR.NURSE_VISITS_BY_ORDER(orderNumber))
+    return response.data
+  },
+  
   // Medical Records
   async createMedicalRecord(data) {
     const response = await api.post(ENDPOINTS.DOCTOR.MEDICAL_RECORDS, data)
@@ -46,6 +51,11 @@ export const doctorService = {
   
   async getMedicalHistory(patientDni) {
     const response = await api.get(ENDPOINTS.DOCTOR.MEDICAL_HISTORY(patientDni))
+    return response.data
+  },
+
+  async updateMedicalRecord(id, data) {
+    const response = await api.put(ENDPOINTS.DOCTOR.UPDATE_MEDICAL_RECORD(id), data)
     return response.data
   }
 }

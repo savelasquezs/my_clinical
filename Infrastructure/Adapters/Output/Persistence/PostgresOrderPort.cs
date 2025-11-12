@@ -181,5 +181,62 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Output.Persistence
             // Esta implementación es básica, debería crear el OrderItem según el tipo
             throw new NotImplementedException("Create method should be implemented based on OrderItem type");
         }
+
+        public List<Order> FindOrdersWithNurseVisitProcedure()
+        {
+            // Obtener todas las facturas para extraer orderNumbers facturadas
+            var invoicedOrderNumbers = context.Invoices
+                .Include(i => i.Orders)
+                .SelectMany(i => i.Orders)
+                .Select(o => o.OrderNumber)
+                .Distinct()
+                .ToList();
+
+            // Obtener todas las órdenes que tienen ProcedureOrderItem con nombre "visita de enfermeria" (case-insensitive)
+            var ordersWithNurseVisit = context.Orders
+                .Include(o => o.Items)
+                .Where(o => context.Set<ProcedureOrderItem>()
+                    .Include(p => p.Procedure)
+                    .Any(poi => poi.OrderNumber == o.OrderNumber && 
+                               poi.Procedure.Name.ToLower() == "visita de enfermeria"))
+                .Where(o => !invoicedOrderNumbers.Contains(o.OrderNumber))
+                .ToList();
+
+            // Cargar relaciones completas de items para cada orden
+            foreach (var order in ordersWithNurseVisit)
+            {
+                // Cargar MedicationOrderItems con Medication
+                var medicationItems = context.Set<MedicationOrderItem>()
+                    .Include(m => m.Medication)
+                    .Where(i => i.OrderNumber == order.OrderNumber)
+                    .ToList();
+
+                // Cargar ProcedureOrderItems con Procedure
+                var procedureItems = context.Set<ProcedureOrderItem>()
+                    .Include(p => p.Procedure)
+                    .Where(i => i.OrderNumber == order.OrderNumber)
+                    .ToList();
+
+                // Cargar DiagnosticAidOrderItems con DiagnosticAid
+                var diagnosticAidItems = context.Set<DiagnosticAidOrderItem>()
+                    .Include(d => d.DiagnosticAid)
+                    .Where(i => i.OrderNumber == order.OrderNumber)
+                    .ToList();
+
+                // Reemplazar los items base con los items específicos que tienen las relaciones cargadas
+                var allItems = new List<OrderItem>();
+                allItems.AddRange(medicationItems);
+                allItems.AddRange(procedureItems);
+                allItems.AddRange(diagnosticAidItems);
+
+                order.Items.Clear();
+                foreach (var item in allItems.OrderBy(i => i.ItemNumber))
+                {
+                    order.Items.Add(item);
+                }
+            }
+
+            return ordersWithNurseVisit;
+        }
     }
 }

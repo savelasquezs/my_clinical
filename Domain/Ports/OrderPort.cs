@@ -17,6 +17,7 @@ namespace Clinica_Herramientas_2.Domain.Ports
         public void Save(Order order);
         public void Update(Order order);
         public OrderItem Create(CreateOrderItemDTO dto);
+        public List<Order> FindOrdersWithNurseVisitProcedure();
     }
 }
 

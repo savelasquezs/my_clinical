@@ -16,6 +16,12 @@ namespace Clinica_Herramientas_2.Domain.Services
         {
             ArgumentNullException.ThrowIfNull(dto);
 
+            // Validar máximo 6 dígitos para número de orden
+            if (dto.OrderNumber > 999999)
+            {
+                throw new Exception("El número de orden no puede tener más de 6 dígitos.");
+            }
+
             // Validar que la orden existe
             _ = orderPort.FindByNumber(dto.OrderNumber) ?? throw new Exception("La orden no existe.");
 

@@ -14,7 +14,9 @@ namespace Clinica_Herramientas_2.Domain.Ports
         public NurseVisit? FindById(NurseVisit nurseVisit);
         public void DeleteById(NurseVisit nurseVisit);
         public bool OrderItemExists(OrderItem orderItem);
-
+        public List<PerformedProcedure> GetPerformedProceduresByOrderItem(int orderNumber, int itemNumber);
+        public List<AdministeredMedication> GetAdministeredMedicationsByOrderItem(int orderNumber, int itemNumber);
+        public List<NurseVisit> FindByOrderNumber(int orderNumber);
     }
 }
 

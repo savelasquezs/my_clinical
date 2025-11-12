@@ -25,6 +25,24 @@ namespace Clinica_Herramientas_2.Domain.Services
             var createOrderItemService = new CreateOrderItem(orderPort, inventoryPort);
             var newItem = createOrderItemService.Create(dto);
 
+            // Validar hospitalización si se está agregando visita de enfermería
+            if (newItem is ProcedureOrderItem procedureItem)
+            {
+                var procedure = inventoryPort.FindProcedureById(procedureItem.Procedure.Id);
+                if (procedure != null && procedure.Name.ToLower() == "visita de enfermeria")
+                {
+                    // Verificar que existe un procedimiento de hospitalización en la orden
+                    bool hasHospitalization = order.Items
+                        .OfType<ProcedureOrderItem>()
+                        .Any(poi => poi.Procedure.Name.ToLower() == "hospitalización");
+
+                    if (!hasHospitalization)
+                    {
+                        throw new Exception("No se puede agregar visita de enfermería sin hospitalización.");
+                    }
+                }
+            }
+
             // Agregar el ítem a la orden
             order.AddItem(newItem);
 

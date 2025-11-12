@@ -56,5 +56,15 @@ namespace Clinica_Herramientas_2.Application.Adapters.Input
         {
             nurseUseCase.SetCurrentUser(user);
         }
+
+        public List<Order> GetAvailableOrders()
+        {
+            return nurseUseCase.GetAvailableOrdersForNurse();
+        }
+
+        public Order GetOrderDetails(int orderNumber)
+        {
+            return nurseUseCase.GetOrderDetailsForNurse(orderNumber);
+        }
     }
 }
