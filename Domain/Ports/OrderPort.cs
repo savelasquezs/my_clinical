@@ -18,6 +18,9 @@ namespace Clinica_Herramientas_2.Domain.Ports
         public void Update(Order order);
         public OrderItem Create(CreateOrderItemDTO dto);
         public List<Order> FindOrdersWithNurseVisitProcedure();
+        public bool IsMedicationInUse(int medicationId);
+        public bool IsProcedureInUse(int procedureId);
+        public bool IsDiagnosticAidInUse(int diagnosticAidId);
     }
 }
 

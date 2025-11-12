@@ -238,5 +238,23 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Output.Persistence
 
             return ordersWithNurseVisit;
         }
+
+        public bool IsMedicationInUse(int medicationId)
+        {
+            return context.Set<MedicationOrderItem>()
+                .Any(m => EF.Property<int>(m, "medication_id") == medicationId);
+        }
+
+        public bool IsProcedureInUse(int procedureId)
+        {
+            return context.Set<ProcedureOrderItem>()
+                .Any(p => EF.Property<int>(p, "procedure_id") == procedureId);
+        }
+
+        public bool IsDiagnosticAidInUse(int diagnosticAidId)
+        {
+            return context.Set<DiagnosticAidOrderItem>()
+                .Any(d => EF.Property<int>(d, "diagnostic_aid_id") == diagnosticAidId);
+        }
     }
 }

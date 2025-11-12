@@ -71,5 +71,20 @@ namespace Clinica_Herramientas_2.Application.Adapters.Input
         {
             supportUseCase.SetCurrentUser(user);
         }
+
+        public void DeleteMedication(int medicationId)
+        {
+            supportUseCase.DeleteMedication(medicationId);
+        }
+
+        public void DeleteProcedure(int procedureId)
+        {
+            supportUseCase.DeleteProcedure(procedureId);
+        }
+
+        public void DeleteDiagnosticAid(int diagnosticAidId)
+        {
+            supportUseCase.DeleteDiagnosticAid(diagnosticAidId);
+        }
     }
 }

@@ -40,7 +40,7 @@ namespace Clinica_Herramientas_2.Infrastructure.Config
         
         public SupportConfig SupportConfig => supportConfig ??= new SupportConfig(
             ports.MedicationPort, ports.ProcedurePort,
-            ports.DiagnosticAidPort, ports.InventoryPort, ports.UserPort
+            ports.DiagnosticAidPort, ports.InventoryPort, ports.UserPort, ports.OrderPort
         );
         
         public AuthConfig AuthConfig => authConfig ??= new AuthConfig(

@@ -35,6 +35,7 @@
         :data="supportStore.medications"
         :loading="supportStore.loading"
         @edit="(item) => handleEdit('medication', item)"
+        @delete="(item) => handleDelete('medication', item)"
       />
 
       <CommonTable
@@ -43,6 +44,7 @@
         :data="supportStore.procedures"
         :loading="supportStore.loading"
         @edit="(item) => handleEdit('procedure', item)"
+        @delete="(item) => handleDelete('procedure', item)"
       />
 
       <CommonTable
@@ -51,6 +53,7 @@
         :data="supportStore.diagnosticAids"
         :loading="supportStore.loading"
         @edit="(item) => handleEdit('diagnosticAid', item)"
+        @delete="(item) => handleDelete('diagnosticAid', item)"
       />
     </div>
 
@@ -68,6 +71,14 @@
         @cancel="closeModal"
       />
     </CommonModal>
+
+    <DeleteModal
+      :is-open="isDeleteModalOpen"
+      :item-type="deleteItemType"
+      :item-name="itemToDelete?.name"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+    />
   </div>
 </template>
 
@@ -80,6 +91,7 @@ import { useMoney } from '@/composables/useMoney'
 import PageHeader from '@/components/shared/PageHeader.vue'
 import CommonTable from '@/components/shared/CommonTable.vue'
 import CommonModal from '@/components/shared/CommonModal.vue'
+import DeleteModal from '@/components/shared/DeleteModal.vue'
 import InventoryForm from '@/components/forms/InventoryForm.vue'
 
 const supportStore = useSupportStore()
@@ -88,8 +100,11 @@ const { formatMoney } = useMoney()
 
 const activeTab = ref('medications')
 const isModalOpen = ref(false)
+const isDeleteModalOpen = ref(false)
 const formMode = ref('create')
 const selectedItem = ref(null)
+const itemToDelete = ref(null)
+const deleteItemType = ref('')
 
 const tabs = [
   { id: 'medications', label: 'Medicamentos' },
@@ -190,6 +205,50 @@ const handleSubmit = async (data) => {
 const closeModal = () => {
   isModalOpen.value = false
   selectedItem.value = null
+}
+
+const handleDelete = (type, item) => {
+  itemToDelete.value = item
+  deleteItemType.value = getItemTypeLabel(type)
+  isDeleteModalOpen.value = true
+}
+
+const getItemTypeLabel = (type) => {
+  const labels = {
+    medication: 'medicamento',
+    procedure: 'procedimiento',
+    diagnosticAid: 'ayuda diagnóstica'
+  }
+  return labels[type] || 'elemento'
+}
+
+const confirmDelete = async () => {
+  if (!itemToDelete.value) return
+
+  try {
+    if (activeTab.value === 'medications') {
+      await supportService.deleteMedication(itemToDelete.value.id)
+      toast.success('Medicamento eliminado exitosamente')
+      await loadMedications()
+    } else if (activeTab.value === 'procedures') {
+      await supportService.deleteProcedure(itemToDelete.value.id)
+      toast.success('Procedimiento eliminado exitosamente')
+      await loadProcedures()
+    } else if (activeTab.value === 'diagnosticAids') {
+      await supportService.deleteDiagnosticAid(itemToDelete.value.id)
+      toast.success('Ayuda diagnóstica eliminada exitosamente')
+      await loadDiagnosticAids()
+    }
+    cancelDelete()
+  } catch (error) {
+    // Error handled by interceptor
+  }
+}
+
+const cancelDelete = () => {
+  isDeleteModalOpen.value = false
+  itemToDelete.value = null
+  deleteItemType.value = ''
 }
 
 const loadMedications = async () => {

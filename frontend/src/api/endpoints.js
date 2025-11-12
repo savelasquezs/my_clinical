@@ -49,8 +49,11 @@ export const ENDPOINTS = {
   // Support
   SUPPORT: {
     MEDICATIONS: '/support/inventory/medications',
+    DELETE_MEDICATION: (id) => `/support/inventory/medications/${id}`,
     PROCEDURES: '/support/inventory/procedures',
-    DIAGNOSTIC_AIDS: '/support/inventory/diagnostic-aids'
+    DELETE_PROCEDURE: (id) => `/support/inventory/procedures/${id}`,
+    DIAGNOSTIC_AIDS: '/support/inventory/diagnostic-aids',
+    DELETE_DIAGNOSTIC_AID: (id) => `/support/inventory/diagnostic-aids/${id}`
   }
 }
 

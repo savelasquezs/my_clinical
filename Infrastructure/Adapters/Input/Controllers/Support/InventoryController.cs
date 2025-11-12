@@ -399,6 +399,105 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Suppo
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpDelete("medications/{id}")]
+        public IActionResult DeleteMedication(int id)
+        {
+            try
+            {
+                // Obtener el usuario actual desde los headers
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                // Establecer el usuario actual en el use case
+                _supportInputs.SetCurrentUser(currentUser);
+
+                _supportInputs.DeleteMedication(id);
+                return Ok(new { message = "Medicamento eliminado exitosamente." });
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException dbEx)
+            {
+                // Capturar errores de base de datos (foreign key violation)
+                if (dbEx.InnerException is Npgsql.PostgresException pgEx && pgEx.SqlState == "23503")
+                {
+                    return BadRequest(new { message = "No se puede eliminar el medicamento porque está siendo utilizado en una o más órdenes." });
+                }
+                return BadRequest(new { message = $"Error al eliminar en la base de datos: {dbEx.Message}" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("procedures/{id}")]
+        public IActionResult DeleteProcedure(int id)
+        {
+            try
+            {
+                // Obtener el usuario actual desde los headers
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                // Establecer el usuario actual en el use case
+                _supportInputs.SetCurrentUser(currentUser);
+
+                _supportInputs.DeleteProcedure(id);
+                return Ok(new { message = "Procedimiento eliminado exitosamente." });
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException dbEx)
+            {
+                // Capturar errores de base de datos (foreign key violation)
+                if (dbEx.InnerException is Npgsql.PostgresException pgEx && pgEx.SqlState == "23503")
+                {
+                    return BadRequest(new { message = "No se puede eliminar el procedimiento porque está siendo utilizado en una o más órdenes." });
+                }
+                return BadRequest(new { message = $"Error al eliminar en la base de datos: {dbEx.Message}" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("diagnostic-aids/{id}")]
+        public IActionResult DeleteDiagnosticAid(int id)
+        {
+            try
+            {
+                // Obtener el usuario actual desde los headers
+                var currentUser = GetCurrentUserFromHeaders();
+                if (currentUser == null)
+                {
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+                }
+
+                // Establecer el usuario actual en el use case
+                _supportInputs.SetCurrentUser(currentUser);
+
+                _supportInputs.DeleteDiagnosticAid(id);
+                return Ok(new { message = "Ayuda diagnóstica eliminada exitosamente." });
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException dbEx)
+            {
+                // Capturar errores de base de datos (foreign key violation)
+                if (dbEx.InnerException is Npgsql.PostgresException pgEx && pgEx.SqlState == "23503")
+                {
+                    return BadRequest(new { message = "No se puede eliminar la ayuda diagnóstica porque está siendo utilizada en una o más órdenes." });
+                }
+                return BadRequest(new { message = $"Error al eliminar en la base de datos: {dbEx.Message}" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 
     public class CreateMedicationRequest

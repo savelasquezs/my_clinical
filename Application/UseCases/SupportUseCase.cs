@@ -13,9 +13,11 @@ namespace Clinica_Herramientas_2.Application.UseCases
     public class SupportUseCase
     {
         private ManageInventory manageInventory;
+        private DeleteInventory deleteInventory;
         private User currentUser;
 
         internal ManageInventory ManageInventory { get => manageInventory; set => manageInventory = value; }
+        internal DeleteInventory DeleteInventoryService { get => deleteInventory; set => deleteInventory = value; }
         internal User CurrentUser { get => currentUser; set => currentUser = value; }
 
         public SupportUseCase(ManageInventory manageInventory)
@@ -123,6 +125,36 @@ namespace Clinica_Herramientas_2.Application.UseCases
             }
 
             return manageInventory.GetAllDiagnosticAids();
+        }
+
+        public void DeleteMedication(int medicationId)
+        {
+            if (this.CurrentUser == null)
+            {
+                throw new Exception("Debe establecer un usuario de soporte válido");
+            }
+
+            deleteInventory.DeleteMedication(this.CurrentUser, medicationId);
+        }
+
+        public void DeleteProcedure(int procedureId)
+        {
+            if (this.CurrentUser == null)
+            {
+                throw new Exception("Debe establecer un usuario de soporte válido");
+            }
+
+            deleteInventory.DeleteProcedure(this.CurrentUser, procedureId);
+        }
+
+        public void DeleteDiagnosticAid(int diagnosticAidId)
+        {
+            if (this.CurrentUser == null)
+            {
+                throw new Exception("Debe establecer un usuario de soporte válido");
+            }
+
+            deleteInventory.DeleteDiagnosticAid(this.CurrentUser, diagnosticAidId);
         }
     }
 }

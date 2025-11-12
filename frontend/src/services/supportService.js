@@ -18,6 +18,11 @@ export const supportService = {
     return response.data
   },
   
+  async deleteMedication(id) {
+    const response = await api.delete(ENDPOINTS.SUPPORT.DELETE_MEDICATION(id))
+    return response.data
+  },
+  
   // Procedures
   async getAllProcedures() {
     const response = await api.get(ENDPOINTS.SUPPORT.PROCEDURES)
@@ -34,6 +39,11 @@ export const supportService = {
     return response.data
   },
   
+  async deleteProcedure(id) {
+    const response = await api.delete(ENDPOINTS.SUPPORT.DELETE_PROCEDURE(id))
+    return response.data
+  },
+  
   // Diagnostic Aids
   async getAllDiagnosticAids() {
     const response = await api.get(ENDPOINTS.SUPPORT.DIAGNOSTIC_AIDS)
@@ -47,6 +57,11 @@ export const supportService = {
   
   async updateDiagnosticAid(data) {
     const response = await api.put(ENDPOINTS.SUPPORT.DIAGNOSTIC_AIDS, data)
+    return response.data
+  },
+  
+  async deleteDiagnosticAid(id) {
+    const response = await api.delete(ENDPOINTS.SUPPORT.DELETE_DIAGNOSTIC_AID(id))
     return response.data
   }
 }
