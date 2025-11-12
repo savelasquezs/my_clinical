@@ -17,20 +17,12 @@
         <LoadingSpinner />
       </div>
       <div v-else-if="doctorStore.patientsWithRecords.length === 0" class="p-8">
-        <EmptyState 
-          message="No hay pacientes con registros médicos"
-          description="Cree un registro médico para comenzar"
-        />
+        <EmptyState message="No hay pacientes con registros médicos"
+          description="Cree un registro médico para comenzar" />
       </div>
       <div v-else>
-        <CommonTable
-          :columns="patientColumns"
-          :data="doctorStore.patientsWithRecords"
-          :clickable="true"
-          :show-edit="false"
-          :show-delete="false"
-          @row-click="selectPatient"
-        />
+        <CommonTable :columns="patientColumns" :data="doctorStore.patientsWithRecords" :clickable="true"
+          :show-edit="false" :show-delete="false" @row-click="selectPatient" />
       </div>
     </div>
 
@@ -50,12 +42,8 @@
             No hay registros médicos para este paciente
           </div>
           <div v-else class="space-y-2">
-            <div
-              v-for="record in patientMedicalRecords"
-              :key="record.id"
-              @click="viewMedicalRecord(record)"
-              class="p-4 bg-gray-50 rounded-lg border cursor-pointer hover:bg-gray-100 transition-colors"
-            >
+            <div v-for="record in patientMedicalRecords" :key="record.id" @click="viewMedicalRecord(record)"
+              class="p-4 bg-gray-50 rounded-lg border cursor-pointer hover:bg-gray-100 transition-colors">
               <div class="flex justify-between items-start">
                 <div>
                   <p class="font-medium">{{ formatDate(record.date) }}</p>
@@ -76,12 +64,8 @@
             No hay órdenes para este paciente
           </div>
           <div v-else class="space-y-2">
-            <div
-              v-for="order in patientOrders"
-              :key="order.orderNumber"
-              @click="viewOrder(order)"
-              class="p-4 bg-gray-50 rounded-lg border cursor-pointer hover:bg-gray-100 transition-colors"
-            >
+            <div v-for="order in patientOrders" :key="order.orderNumber" @click="viewOrder(order)"
+              class="p-4 bg-gray-50 rounded-lg border cursor-pointer hover:bg-gray-100 transition-colors">
               <div class="flex justify-between items-start">
                 <div>
                   <p class="font-medium">Orden #{{ order.orderNumber }}</p>
@@ -100,47 +84,21 @@
     </div>
 
     <!-- Modal para crear registro médico -->
-    <CommonModal
-      :is-open="isCreateModalOpen"
-      title="Crear Registro Médico"
-      size="xl"
-      @close="closeCreateModal"
-    >
-      <MedicalRecordForm
-        @submit="handleCreateMedicalRecord"
-        @cancel="closeCreateModal"
-      />
+    <CommonModal :is-open="isCreateModalOpen" title="Crear Registro Médico" size="xl" @close="closeCreateModal">
+      <MedicalRecordForm @submit="handleCreateMedicalRecord" @cancel="closeCreateModal" />
     </CommonModal>
 
     <!-- Modal para ver detalle de registro médico -->
-    <CommonModal
-      v-if="selectedMedicalRecord"
-      :is-open="isMedicalRecordDetailOpen && !!selectedMedicalRecord"
-      title="Detalle del Registro Médico"
-      size="lg"
-      @close="closeMedicalRecordDetail"
-    >
-      <MedicalRecordDetail
-        v-if="selectedMedicalRecord"
-        :medical-record="selectedMedicalRecord"
-        @view-order="handleViewOrderFromRecord"
-        @close="closeMedicalRecordDetail"
-      />
+    <CommonModal v-if="selectedMedicalRecord" :is-open="isMedicalRecordDetailOpen && !!selectedMedicalRecord"
+      title="Detalle del Registro Médico" size="lg" @close="closeMedicalRecordDetail">
+      <MedicalRecordDetail v-if="selectedMedicalRecord" :medical-record="selectedMedicalRecord"
+        @view-order="handleViewOrderFromRecord" @close="closeMedicalRecordDetail" />
     </CommonModal>
 
     <!-- Modal para ver detalle de orden -->
-    <CommonModal
-      :is-open="isOrderDetailOpen"
-      title="Detalle de la Orden"
-      size="xl"
-      @close="closeOrderDetail"
-    >
-      <OrderDetail
-        v-if="selectedOrder"
-        :order="selectedOrder"
-        @close="closeOrderDetail"
-        @updated="handleOrderUpdated"
-      />
+    <CommonModal :is-open="isOrderDetailOpen" title="Detalle de la Orden" size="xl" @close="closeOrderDetail">
+      <OrderDetail v-if="selectedOrder" :order="selectedOrder" @close="closeOrderDetail"
+        @updated="handleOrderUpdated" />
     </CommonModal>
   </div>
 </template>
@@ -188,16 +146,16 @@ const patientMedicalRecords = computed(() => {
 
 const patientOrders = computed(() => {
   if (!selectedPatient.value) return []
-  
+
   // Obtener los orderNumbers de los registros médicos del paciente
   const medicalRecordOrderNumbers = new Set(
     patientMedicalRecords.value
       .map(mr => mr.orderNumber)
       .filter(orderNumber => orderNumber != null)
   )
-  
+
   // Filtrar solo las órdenes que están enlazadas a registros médicos
-  return doctorStore.orders.filter(order => 
+  return doctorStore.orders.filter(order =>
     medicalRecordOrderNumbers.has(order.orderNumber)
   )
 })
@@ -303,7 +261,7 @@ const handleCreateMedicalRecord = async (data) => {
         items: data.order.items
       }
       await doctorService.createOrder(orderData)
-      
+
       // Asociar la orden al registro médico
       data.orderNumber = data.order.orderNumber
     }
@@ -320,10 +278,10 @@ const handleCreateMedicalRecord = async (data) => {
 
     toast.success('Registro médico creado exitosamente')
     closeCreateModal()
-    
+
     // Recargar datos
     await loadData()
-    
+
     // Si hay un paciente seleccionado, recargar sus órdenes
     if (selectedPatient.value) {
       await loadPatientOrders(selectedPatient.value.dni)
