@@ -57,6 +57,12 @@ export const doctorService = {
   async updateMedicalRecord(id, data) {
     const response = await api.put(ENDPOINTS.DOCTOR.UPDATE_MEDICAL_RECORD(id), data)
     return response.data
+  },
+
+  // Appointments
+  async getAvailableAppointments() {
+    const response = await api.get(ENDPOINTS.DOCTOR.AVAILABLE_APPOINTMENTS)
+    return response.data
   }
 }
 

@@ -30,7 +30,8 @@ const menuItemsByRole = {
     { path: '/admin/invoices', label: 'Facturas', icon: 'DocumentIcon' }
   ],
   [ROLES.DOCTOR]: [
-    { path: '/doctor/medical-records', label: 'Registros Médicos', icon: 'DocumentTextIcon' }
+    { path: '/doctor/medical-records', label: 'Historia Clínica', icon: 'DocumentTextIcon' },
+    { path: '/doctor/appointments', label: 'Citas Disponibles', icon: 'CalendarIcon' }
   ],
   [ROLES.NURSE]: [
     { path: '/nurse/visits', label: 'Visitas', icon: 'HeartIcon' }

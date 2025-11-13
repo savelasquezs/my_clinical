@@ -17,6 +17,7 @@ namespace Clinica_Herramientas_2.Domain.Ports
         public Appointment? FindById(int id);
         public void UpdateAppointment(Appointment appointment);
         public void DeleteAppointment(Appointment appointment);
+        public List<Appointment> FindAvailableAppointments();
 
     }
 }

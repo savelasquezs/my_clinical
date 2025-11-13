@@ -48,9 +48,14 @@ namespace Clinica_Herramientas_2.Application.Adapters.Input
             doctorUseCase.AddDiagnosticAidToOrder(order, itemNumber, cost, diagnosticAid, quantity, requiresSpecialist, specialistTypeId);
         }
         
-        public void CreateMedicalRecord(DateTime date, Patient patient, string consultationReason, string symptoms, string diagnosis, Order? order = null)
+        public void CreateMedicalRecord(DateTime date, Patient patient, string consultationReason, string symptoms, string diagnosis, Order? order = null, int? appointmentId = null)
         {
-            doctorUseCase.CreateNewMedicalRecord(date, patient, consultationReason, symptoms, diagnosis, order);
+            doctorUseCase.CreateNewMedicalRecord(date, patient, consultationReason, symptoms, diagnosis, order, appointmentId);
+        }
+
+        public List<Appointment> GetAvailableAppointments()
+        {
+            return doctorUseCase.GetAvailableAppointments();
         }
         
         public List<MedicalRecord> GetMedicalHistory(string patientDni)

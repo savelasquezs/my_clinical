@@ -14,16 +14,18 @@ namespace Clinica_Herramientas_2.Domain.Services
         private readonly IUserPort userPort;
         private readonly IOrderPort orderPort;
         private readonly IMedicalRecordPort medicalRecordPort;
+        private readonly IAppointmentPort appointmentPort;
 
-        public CreateMedicalRecord(IPatientPort patientPort, IUserPort userPort, IOrderPort orderPort, IMedicalRecordPort medicalRecordPort)
+        public CreateMedicalRecord(IPatientPort patientPort, IUserPort userPort, IOrderPort orderPort, IMedicalRecordPort medicalRecordPort, IAppointmentPort appointmentPort)
         {
             this.patientPort = patientPort;
             this.userPort = userPort;
             this.orderPort = orderPort;
             this.medicalRecordPort = medicalRecordPort;
+            this.appointmentPort = appointmentPort;
         }
 
-        public void Create(MedicalRecord medicalRecord)
+        public void Create(MedicalRecord medicalRecord, int? appointmentId = null)
         {
             // Validar que el paciente existe
             _ = patientPort.FindByDocument(medicalRecord.Patient.Dni) ?? throw new Exception("El paciente no existe");
@@ -39,6 +41,22 @@ namespace Clinica_Herramientas_2.Domain.Services
             if (medicalRecord.Order != null)
             {
                 _ = orderPort.FindByNumber(medicalRecord.Order.OrderNumber) ?? throw new Exception("La orden no existe");
+            }
+
+            // Si se proporciona appointmentId, validar y aceptar la cita
+            if (appointmentId.HasValue)
+            {
+                var appointment = appointmentPort.FindById(appointmentId.Value);
+                if (appointment == null)
+                {
+                    throw new Exception("La cita no existe");
+                }
+                if (appointment.IsAccepted1)
+                {
+                    throw new Exception("La cita ya ha sido aceptada");
+                }
+                appointment.Accept();
+                appointmentPort.UpdateAppointment(appointment);
             }
 
             // Guardar en la base de datos relacional

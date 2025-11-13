@@ -2,10 +2,7 @@
   <div>
     <PageHeader title="Historia Clínica">
       <template #actions>
-        <button v-if="!selectedPatient" @click="openCreateModal" class="btn btn-primary">
-          Crear Registro Médico
-        </button>
-        <button v-else @click="goBack" class="btn btn-secondary">
+        <button v-if="selectedPatient" @click="goBack" class="btn btn-secondary">
           Volver
         </button>
       </template>
@@ -18,7 +15,7 @@
       </div>
       <div v-else-if="doctorStore.patientsWithRecords.length === 0" class="p-8">
         <EmptyState message="No hay pacientes con registros médicos"
-          description="Cree un registro médico para comenzar" />
+          description="Los registros médicos se crean desde las citas disponibles" />
       </div>
       <div v-else>
         <CommonTable :columns="patientColumns" :data="doctorStore.patientsWithRecords" :clickable="true"
@@ -255,11 +252,6 @@ const handleOrderUpdated = async () => {
   }
 }
 
-const openCreateModal = () => {
-  followUpMessage.value = ''
-  initialFormData.value = null
-  isCreateModalOpen.value = true
-}
 
 const closeCreateModal = () => {
   isCreateModalOpen.value = false

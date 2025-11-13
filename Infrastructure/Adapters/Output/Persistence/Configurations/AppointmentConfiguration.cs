@@ -13,6 +13,10 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Output.Persistence.Conf
             
             builder.Property(a => a.Id1).ValueGeneratedOnAdd();
             builder.Property(a => a.Date1).IsRequired();
+            builder.Property(a => a.IsAccepted1)
+                   .HasColumnName("is_accepted")
+                   .IsRequired()
+                   .HasDefaultValue(false);
             
             builder.HasOne(a => a.Patient1)
                    .WithMany(p => p.Appointments)

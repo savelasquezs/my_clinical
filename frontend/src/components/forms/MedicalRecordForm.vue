@@ -236,7 +236,8 @@ const handleSubmit = () => {
       consultationReason: formData.value.consultationReason,
       symptoms: formData.value.symptoms,
       diagnosis: formData.value.diagnosis,
-      orderNumber: null
+      orderNumber: null,
+      appointmentId: props.initialData?.appointmentId || null
     }
 
     // Si se crea orden, incluir los datos de la orden
@@ -280,9 +281,20 @@ onMounted(() => {
       formData.value.consultationReason = props.initialData.consultationReason || ''
       formData.value.symptoms = props.initialData.symptoms || ''
       formData.value.diagnosis = props.initialData.diagnosis || ''
-    } else if (props.mode === 'create' && props.initialData.patientDni) {
-      // En modo creación, prellenar solo el patientDni si viene en initialData
-      formData.value.patientDni = props.initialData.patientDni
+    } else if (props.mode === 'create' && props.initialData) {
+      // En modo creación, prellenar datos si vienen en initialData
+      if (props.initialData.patientDni) {
+        formData.value.patientDni = props.initialData.patientDni
+      }
+      if (props.initialData.date) {
+        const date = new Date(props.initialData.date)
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        const hours = String(date.getHours()).padStart(2, '0')
+        const minutes = String(date.getMinutes()).padStart(2, '0')
+        formData.value.date = `${year}-${month}-${day}T${hours}:${minutes}`
+      }
     }
   }
 })

@@ -80,5 +80,14 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Output.Persistence
         {
             Delete(appointment);
         }
+
+        public List<Appointment> FindAvailableAppointments()
+        {
+            return context.Appointments
+                .Include(a => a.Patient1)
+                .Where(a => !a.IsAccepted1)
+                .OrderBy(a => a.Date1)
+                .ToList();
+        }
     }
 }

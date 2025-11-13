@@ -77,7 +77,8 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Docto
                     request.ConsultationReason,
                     request.Symptoms,
                     request.Diagnosis,
-                    order
+                    order,
+                    request.AppointmentId
                 );
 
                 return Ok(new { message = "Registro médico creado exitosamente." });
@@ -209,6 +210,7 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Docto
         public string Symptoms { get; set; } = string.Empty;
         public string Diagnosis { get; set; } = string.Empty;
         public int? OrderNumber { get; set; }
+        public int? AppointmentId { get; set; }
     }
 
     public class UpdateMedicalRecordRequest

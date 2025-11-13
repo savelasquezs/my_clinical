@@ -93,7 +93,8 @@ namespace Clinica_Herramientas_2.Infrastructure.Adapters.Input.Controllers.Admin
                     id1 = a.Id1,
                     patientDni = a.Patient1?.Dni ?? string.Empty,
                     patientName = a.Patient1?.Fullname ?? string.Empty,
-                    date1 = a.Date1
+                    date1 = a.Date1,
+                    isAccepted1 = a.IsAccepted1
                 }).ToList();
                 return Ok(appointmentDtos);
             }

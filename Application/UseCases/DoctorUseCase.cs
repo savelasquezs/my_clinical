@@ -18,6 +18,7 @@ namespace Clinica_Herramientas_2.Application.UseCases
         private UpdateMedicalRecord updateMedicalRecord;
         private ViewMedicalHistory viewMedicalHistory;
         private Domain.Ports.IOrderPort orderPort;
+        private Domain.Ports.IAppointmentPort appointmentPort;
 
         internal CreateOrder CreateOrder { get => createOrder; set => createOrder = value; }
         internal CreateOrderItem CreateOrderItem { get => createOrderItem; set => createOrderItem = value; }
@@ -27,9 +28,10 @@ namespace Clinica_Herramientas_2.Application.UseCases
         internal UpdateMedicalRecord UpdateMedicalRecordService { get => updateMedicalRecord; set => updateMedicalRecord = value; }
         internal ViewMedicalHistory ViewMedicalHistory { get => viewMedicalHistory; set => viewMedicalHistory = value; }
         internal Domain.Ports.IOrderPort OrderPort { get => orderPort; set => orderPort = value; }
+        internal Domain.Ports.IAppointmentPort AppointmentPort { get => appointmentPort; set => appointmentPort = value; }
         internal User CurrentUser { get => currentUser; set => currentUser = value; }
 
-        public DoctorUseCase(CreateOrder createOrder, CreateOrderItem createOrderItem, AddOrderItem addOrderItem, UpdateOrderItem updateOrderItem, CreateMedicalRecord createMedicalRecord, UpdateMedicalRecord updateMedicalRecord, ViewMedicalHistory viewMedicalHistory, ViewPatientInformation viewPatientInformation, Domain.Ports.IOrderPort orderPort)
+        public DoctorUseCase(CreateOrder createOrder, CreateOrderItem createOrderItem, AddOrderItem addOrderItem, UpdateOrderItem updateOrderItem, CreateMedicalRecord createMedicalRecord, UpdateMedicalRecord updateMedicalRecord, ViewMedicalHistory viewMedicalHistory, ViewPatientInformation viewPatientInformation, Domain.Ports.IOrderPort orderPort, Domain.Ports.IAppointmentPort appointmentPort)
             : base(viewPatientInformation)
         {
             this.createOrder = createOrder;
@@ -40,6 +42,7 @@ namespace Clinica_Herramientas_2.Application.UseCases
             this.updateMedicalRecord = updateMedicalRecord;
             this.viewMedicalHistory = viewMedicalHistory;
             this.orderPort = orderPort;
+            this.appointmentPort = appointmentPort;
         }
 
         public void SetCurrentUser(User user)
@@ -120,7 +123,7 @@ namespace Clinica_Herramientas_2.Application.UseCases
             addOrderItem.AddItem(dto);
         }
 
-        public void CreateNewMedicalRecord(DateTime date, Patient patient, string consultationReason, string symptoms, string diagnosis, Order? order = null)
+        public void CreateNewMedicalRecord(DateTime date, Patient patient, string consultationReason, string symptoms, string diagnosis, Order? order = null, int? appointmentId = null)
         {
             if (this.CurrentUser == null)
             {
@@ -128,7 +131,17 @@ namespace Clinica_Herramientas_2.Application.UseCases
             }
 
             var medicalRecord = new MedicalRecord(date, patient, this.CurrentUser, consultationReason, symptoms, diagnosis, order ?? null!);
-            createMedicalRecord.Create(medicalRecord);
+            createMedicalRecord.Create(medicalRecord, appointmentId);
+        }
+
+        public List<Appointment> GetAvailableAppointments()
+        {
+            if (this.CurrentUser == null)
+            {
+                throw new Exception("Debe establecer un médico válido");
+            }
+
+            return appointmentPort.FindAvailableAppointments();
         }
 
         public List<MedicalRecord> GetMedicalHistory(string patientDni)

@@ -55,7 +55,7 @@ namespace Clinica_Herramientas_2.Infrastructure.Config
             CreateOrderItemService = new CreateOrderItem(OrderPort, InventoryPort);
             AddOrderItemService = new AddOrderItem(OrderPort, InventoryPort, new OrderRulesService());
             UpdateOrderItemService = new UpdateOrderItem(OrderPort, InventoryPort, new OrderRulesService());
-            CreateMedicalRecordService = new CreateMedicalRecord(PatientPort, UserPort, OrderPort, MedicalRecordPort);
+            CreateMedicalRecordService = new CreateMedicalRecord(PatientPort, UserPort, OrderPort, MedicalRecordPort, AppointmentPort);
             UpdateMedicalRecordService = new UpdateMedicalRecord(MedicalRecordPort, UserPort);
             ViewMedicalHistoryService = new ViewMedicalHistory(PatientPort, UserPort, MedicalRecordPort);
             ViewPatientInformationService = new ViewPatientInformation(PatientPort, AppointmentPort, OrderPort);
@@ -70,7 +70,8 @@ namespace Clinica_Herramientas_2.Infrastructure.Config
                 UpdateMedicalRecordService,
                 ViewMedicalHistoryService,
                 ViewPatientInformationService,
-                OrderPort
+                OrderPort,
+                AppointmentPort
             );
             
             // Builders

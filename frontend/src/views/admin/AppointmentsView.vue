@@ -2,16 +2,46 @@
   <div>
     <PageHeader title="Citas">
       <template #actions>
-        <button @click="openCreateModal" class="btn btn-primary">
+        <button v-if="activeTab === 'pending'" @click="openCreateModal" class="btn btn-primary">
           Crear Cita
         </button>
       </template>
     </PageHeader>
 
+    <!-- Tabs -->
+    <div class="card mb-6">
+      <div class="border-b border-gray-200">
+        <nav class="-mb-px flex space-x-8">
+          <button
+            @click="activeTab = 'pending'"
+            :class="[
+              'py-4 px-1 border-b-2 font-medium text-sm',
+              activeTab === 'pending'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            ]"
+          >
+            Pendientes
+          </button>
+          <button
+            @click="activeTab = 'accepted'"
+            :class="[
+              'py-4 px-1 border-b-2 font-medium text-sm',
+              activeTab === 'accepted'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            ]"
+          >
+            Aceptadas
+          </button>
+        </nav>
+      </div>
+    </div>
+
     <div class="card">
       <CommonTable
         :columns="columns"
-        :data="adminStore.appointments"
+        :data="filteredAppointments"
         :loading="adminStore.loading"
         @edit="handleEdit"
         @delete="handleDelete"
@@ -57,6 +87,7 @@ const adminStore = useAdminStore()
 const toast = useToast()
 const { formatDateTime } = useDate()
 
+const activeTab = ref('pending')
 const isModalOpen = ref(false)
 const isDeleteModalOpen = ref(false)
 const formMode = ref('create')
@@ -67,6 +98,14 @@ const modalTitle = computed(() =>
   formMode.value === 'create' ? 'Crear Cita' : 'Editar Cita'
 )
 
+const filteredAppointments = computed(() => {
+  if (activeTab.value === 'pending') {
+    return adminStore.appointments.filter(a => !a.isAccepted1)
+  } else {
+    return adminStore.appointments.filter(a => a.isAccepted1)
+  }
+})
+
 const columns = [
   { key: 'id1', label: 'ID' },
   { key: 'patientDni', label: 'DNI Paciente' },
@@ -75,6 +114,11 @@ const columns = [
     key: 'date1', 
     label: 'Fecha',
     formatter: (value) => formatDateTime(value)
+  },
+  {
+    key: 'isAccepted1',
+    label: 'Estado',
+    formatter: (value) => value ? 'Aceptada' : 'Pendiente'
   }
 ]
 

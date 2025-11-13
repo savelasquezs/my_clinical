@@ -28,7 +28,8 @@ export const ENDPOINTS = {
     MEDICAL_RECORDS: '/doctor/medical-records',
     ALL_MEDICAL_RECORDS: '/doctor/medical-records',
     UPDATE_MEDICAL_RECORD: (id) => `/doctor/medical-records/${id}`,
-    MEDICAL_HISTORY: (dni) => `/doctor/medical-records/patient/${dni}`
+    MEDICAL_HISTORY: (dni) => `/doctor/medical-records/patient/${dni}`,
+    AVAILABLE_APPOINTMENTS: '/doctor/appointments/available'
   },
   
   // Nurse
