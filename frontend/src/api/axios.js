@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
-import { ENDPOINTS } from './endpoints'
+
 
 // baseURL debe ser la URL completa o /api si usamos proxy de Vite
 const baseURL = import.meta.env.VITE_API_BASE_URL || '/api'
