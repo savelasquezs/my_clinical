@@ -343,9 +343,26 @@ CREATE DATABASE clinica_herramientas_2;
 ```
 
 #### 3. Aplicar Migraciones
+
+**Aplicar todas las migraciones pendientes:**
 ```bash
 dotnet ef database update
 ```
+
+Esto creará todas las tablas en la base de datos y ejecutará la migración `SeedInitialRRHHUser` que crea el usuario inicial del sistema.
+
+**Usuario Inicial Creado por la Migración:**
+
+La migración `20251023002033_SeedInitialRRHHUser` crea automáticamente un usuario de RRHH con las siguientes credenciales:
+
+- **Username**: `santiago`
+- **Password**: `admin123`
+- **DNI**: `00000000`
+- **Rol**: `RRHH`
+- **Nombre completo**: `Santiago Admin`
+- **Email**: `santiago@clinica.com`
+
+> **Nota**: Este usuario tiene permisos de RRHH, lo que le permite gestionar usuarios del sistema. Es recomendable cambiar la contraseña después del primer inicio de sesión o crear usuarios adicionales según sea necesario.
 
 #### 4. Instalar Dependencias del Frontend
 ```bash
@@ -374,7 +391,10 @@ El frontend estará disponible en `http://localhost:5173`
 
 1. Abre `http://localhost:5173` en tu navegador
 2. Deberías ver la pantalla de login
-3. Usa las credenciales del usuario inicial de RRHH (creado en la migración)
+3. Usa las credenciales del usuario inicial:
+   - **Username**: `santiago`
+   - **Password**: `admin123`
+4. Una vez autenticado, serás redirigido al dashboard según tu rol (RRHH en este caso)
 
 ## API REST y Swagger
 
