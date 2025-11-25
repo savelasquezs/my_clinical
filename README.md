@@ -12,6 +12,202 @@ Este sistema está diseñado para facilitar la gestión diaria de una clínica m
 - **RRHH**: Gestión de usuarios del sistema
 - **Support**: Gestión de inventario de recursos clínicos
 
+---
+
+## 🚀 Guía de Instalación Paso a Paso
+
+Sigue estos pasos para poner en marcha el proyecto desde cero:
+
+### Requisitos Previos
+
+Antes de comenzar, asegúrate de tener instalado:
+
+- **.NET 8.0 SDK** - [Descargar aquí](https://dotnet.microsoft.com/download/dotnet/8.0)
+- **PostgreSQL 12 o superior** - [Descargar aquí](https://www.postgresql.org/download/)
+- **Node.js 18 o superior** - [Descargar aquí](https://nodejs.org/)
+- **Git** - [Descargar aquí](https://git-scm.com/downloads)
+
+### Paso 1: Clonar el Repositorio
+
+1. Copia la URL del repositorio desde GitHub
+2. Abre una terminal (PowerShell, CMD, o Git Bash)
+3. Navega a la carpeta donde quieres clonar el proyecto
+4. Ejecuta el siguiente comando:
+
+```bash
+git clone <URL-DEL-REPOSITORIO>
+```
+
+Por ejemplo:
+```bash
+git clone https://github.com/tu-usuario/clinica-herramientas-2.git
+```
+
+5. Navega a la carpeta del proyecto:
+
+```bash
+cd "Clinica Herramientas 2"
+```
+
+### Paso 2: Configurar PostgreSQL
+
+1. **Inicia PostgreSQL** (si no está corriendo como servicio)
+
+2. **Abre pgAdmin o psql** y crea la base de datos:
+
+```sql
+CREATE DATABASE clinica_herramientas_2;
+```
+
+O desde la terminal:
+```bash
+psql -U postgres -c "CREATE DATABASE clinica_herramientas_2;"
+```
+
+3. **Configura la cadena de conexión** en el archivo `appsettings.json`:
+
+```json
+{
+  "ConnectionStrings": {
+    "ClinicaDb": "Host=localhost;Port=5432;Database=clinica_herramientas_2;Username=postgres;Password=TU_PASSWORD"
+  }
+}
+```
+
+> **Importante**: Reemplaza `TU_PASSWORD` con la contraseña de tu usuario de PostgreSQL (por defecto suele ser la que configuraste durante la instalación).
+
+### Paso 3: Aplicar Migraciones de Base de Datos
+
+1. Desde la raíz del proyecto, ejecuta:
+
+```bash
+dotnet ef database update
+```
+
+Este comando:
+- Crea todas las tablas necesarias en la base de datos
+- Ejecuta la migración `SeedInitialRRHHUser` que crea el usuario inicial
+
+2. **Verifica que se haya creado el usuario inicial** ejecutando en PostgreSQL:
+
+```sql
+SELECT username, role FROM app_user WHERE username = 'santiago';
+```
+
+Deberías ver:
+- **Username**: `santiago`
+- **Rol**: `RRHH`
+
+### Paso 4: Instalar Dependencias del Frontend
+
+1. Navega a la carpeta `frontend`:
+
+```bash
+cd frontend
+```
+
+2. Instala las dependencias de Node.js:
+
+```bash
+npm install
+```
+
+Esto puede tardar unos minutos la primera vez.
+
+3. Regresa a la raíz del proyecto:
+
+```bash
+cd ..
+```
+
+### Paso 5: Ejecutar el Backend
+
+1. Abre una **primera terminal** en la raíz del proyecto
+
+2. Ejecuta el backend:
+
+```bash
+dotnet run
+```
+
+3. **Espera a ver este mensaje**:
+```
+Now listening on: http://localhost:5000
+```
+
+4. **Verifica que el backend esté funcionando**:
+   - Abre tu navegador y ve a: `http://localhost:5000/swagger`
+   - Deberías ver la documentación de la API (Swagger UI)
+
+> **Nota**: Mantén esta terminal abierta mientras trabajas con el proyecto.
+
+### Paso 6: Ejecutar el Frontend
+
+1. Abre una **segunda terminal** en la raíz del proyecto
+
+2. Navega a la carpeta `frontend`:
+
+```bash
+cd frontend
+```
+
+3. Ejecuta el servidor de desarrollo:
+
+```bash
+npm run dev
+```
+
+4. **Espera a ver este mensaje**:
+```
+  VITE v5.x.x  ready in xxx ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+```
+
+> **Nota**: Mantén esta terminal abierta mientras trabajas con el proyecto.
+
+### Paso 7: Acceder a la Aplicación
+
+1. Abre tu navegador y ve a: `http://localhost:5173`
+
+2. Deberías ver la **pantalla de login**
+
+3. **Inicia sesión con las credenciales del usuario inicial**:
+   - **Username**: `santiago`
+   - **Password**: `admin123`
+
+4. Una vez autenticado, serás redirigido al dashboard de **RRHH**
+
+### ✅ Verificación Final
+
+Para verificar que todo está funcionando correctamente:
+
+- ✅ Backend corriendo en `http://localhost:5000`
+- ✅ Swagger disponible en `http://localhost:5000/swagger`
+- ✅ Frontend corriendo en `http://localhost:5173`
+- ✅ Puedes iniciar sesión con las credenciales del usuario inicial
+- ✅ El dashboard se carga correctamente después del login
+
+### 🔐 Credenciales del Usuario Inicial
+
+El sistema crea automáticamente un usuario de RRHH con las siguientes credenciales:
+
+| Campo | Valor |
+|-------|-------|
+| **Username** | `santiago` |
+| **Password** | `admin123` |
+| **DNI** | `00000000` |
+| **Rol** | `RRHH` |
+| **Nombre completo** | `Santiago Admin` |
+| **Email** | `santiago@clinica.com` |
+
+> **⚠️ Importante**: Este usuario tiene permisos de RRHH para gestionar usuarios del sistema. Es **altamente recomendable** cambiar la contraseña después del primer inicio de sesión o crear usuarios adicionales según sea necesario.
+
+---
+
+## 📚 Documentación Técnica
+
 ## Arquitectura del Proyecto
 
 El sistema está organizado en 3 capas principales siguiendo el patrón de **Arquitectura Hexagonal (Ports & Adapters)**:
@@ -305,96 +501,48 @@ VITE_API_BASE_URL=http://localhost:5000/api
 
 Si no se define, el frontend usa `/api` y el proxy de Vite redirige al backend.
 
-## Configuración y Ejecución
+## Comandos Útiles
 
-### Requisitos Previos
+### Backend
 
-**Backend:**
-- .NET 8.0 SDK
-- PostgreSQL 12 o superior instalado y corriendo
-- Visual Studio 2022 o superior (recomendado) o VS Code con extensiones de C#
-
-**Frontend:**
-- Node.js 18 o superior
-- npm o yarn
-
-### Pasos de Instalación
-
-#### 1. Clonar el Repositorio
 ```bash
-git clone <url-del-repositorio>
-cd "Clinica Herramientas 2"
-```
+# Compilar el proyecto
+dotnet build
 
-#### 2. Configurar Base de Datos
+# Ejecutar el proyecto
+dotnet run
 
-**Crear la base de datos en PostgreSQL:**
-```sql
-CREATE DATABASE clinica_herramientas_2;
-```
+# Ejecutar con URL específica
+dotnet run --urls "http://localhost:5000"
 
-**Configurar cadena de conexión en `appsettings.json`:**
-```json
-{
-  "ConnectionStrings": {
-    "ClinicaDb": "Host=localhost;Port=5432;Database=clinica_herramientas_2;Username=postgres;Password=tu_password"
-  }
-}
-```
+# Limpiar build
+dotnet clean
 
-#### 3. Aplicar Migraciones
+# Ver migraciones aplicadas
+dotnet ef migrations list
 
-**Aplicar todas las migraciones pendientes:**
-```bash
+# Crear nueva migración
+dotnet ef migrations add NombreMigracion
+
+# Aplicar migraciones
 dotnet ef database update
 ```
 
-Esto creará todas las tablas en la base de datos y ejecutará la migración `SeedInitialRRHHUser` que crea el usuario inicial del sistema.
+### Frontend
 
-**Usuario Inicial Creado por la Migración:**
-
-La migración `20251023002033_SeedInitialRRHHUser` crea automáticamente un usuario de RRHH con las siguientes credenciales:
-
-- **Username**: `santiago`
-- **Password**: `admin123`
-- **DNI**: `00000000`
-- **Rol**: `RRHH`
-- **Nombre completo**: `Santiago Admin`
-- **Email**: `santiago@clinica.com`
-
-> **Nota**: Este usuario tiene permisos de RRHH, lo que le permite gestionar usuarios del sistema. Es recomendable cambiar la contraseña después del primer inicio de sesión o crear usuarios adicionales según sea necesario.
-
-#### 4. Instalar Dependencias del Frontend
 ```bash
-cd frontend
+# Instalar dependencias
 npm install
-cd ..
-```
 
-#### 5. Ejecutar la Aplicación
-
-**Terminal 1 - Backend:**
-```bash
-dotnet run
-```
-El backend estará disponible en `http://localhost:5000`
-- Swagger UI: `http://localhost:5000/swagger`
-
-**Terminal 2 - Frontend:**
-```bash
-cd frontend
+# Modo desarrollo
 npm run dev
+
+# Build para producción
+npm run build
+
+# Preview del build
+npm run preview
 ```
-El frontend estará disponible en `http://localhost:5173`
-
-### Verificación
-
-1. Abre `http://localhost:5173` en tu navegador
-2. Deberías ver la pantalla de login
-3. Usa las credenciales del usuario inicial:
-   - **Username**: `santiago`
-   - **Password**: `admin123`
-4. Una vez autenticado, serás redirigido al dashboard según tu rol (RRHH en este caso)
 
 ## API REST y Swagger
 
