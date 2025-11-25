@@ -35,12 +35,7 @@ Antes de comenzar, asegúrate de tener instalado:
 4. Ejecuta el siguiente comando:
 
 ```bash
-git clone <URL-DEL-REPOSITORIO>
-```
-
-Por ejemplo:
-```bash
-git clone https://github.com/tu-usuario/clinica-herramientas-2.git
+git clone https://github.com/savelasquezs/my_clinical.git
 ```
 
 5. Navega a la carpeta del proyecto:
