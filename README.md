@@ -7,112 +7,535 @@ Sistema de gestión integral para clínicas médicas desarrollado con arquitectu
 Este sistema está diseñado para facilitar la gestión diaria de una clínica médica, proporcionando diferentes interfaces según el rol del usuario:
 
 - **Admin**: Gestión de pacientes, citas y facturación
-- **Doctor**: Órdenes médicas, historiales clínicos, recetas
+- **Doctor**: Órdenes médicas, historiales clínicos, recetas y citas disponibles
 - **Nurse**: Visitas de enfermería, registro de atención
 - **RRHH**: Gestión de usuarios del sistema
 - **Support**: Gestión de inventario de recursos clínicos
 
 ## Arquitectura del Proyecto
 
-El sistema está organizado en 3 capas principales:
+El sistema está organizado en 3 capas principales siguiendo el patrón de **Arquitectura Hexagonal (Ports & Adapters)**:
 
-- **Domain**: Modelos de negocio (Patient, User, Order, Appointment, etc.)
-- **Application**: Casos de uso específicos del sistema
-- **Infrastructure**: Conexión a PostgreSQL y configuración
+- **Domain**: Modelos de negocio, puertos (interfaces) y servicios de dominio
+- **Application**: Casos de uso específicos del sistema y adaptadores de entrada
+- **Infrastructure**: Conexión a PostgreSQL, adaptadores de salida y configuración
 
-## Flujo de Datos
+### Stack Tecnológico
 
-### Flujo Exitoso:
-1. Usuario interactúa con Windows Forms → `Form1.cs`
-2. Input Adapter valida y construye objetos → `AdminInputs`, `DoctorInputs`, etc.
-3. Use Case coordina la operación → `AdminUseCase`, `DoctorUseCase`, etc.
-4. Domain Service ejecuta reglas de negocio → `CreatePatient`, `CreateOrder`, etc.
-5. Port (interfaz) define qué operaciones hacer → `IPatientPort`, `IOrderPort`, etc.
-6. Adapter de salida ejecuta en BD → `PostgresPatientPort`, `PostgresOrderPort`, etc.
-7. Respuesta exitosa regresa por el mismo camino hasta la UI
-
-### Flujo con Error:
-1. Si hay error de validación → Exception lanzada en Input Adapter
-2. Si hay error de reglas de negocio → Exception lanzada en Domain Service
-3. Si hay error de BD → Exception lanzada en Postgres Adapter
-4. Exception se propaga hacia arriba por todas las capas
-5. UI captura la excepción y muestra mensaje al usuario
-
-## Estructura de Carpetas
-
-```
-Clinica Herramientas 2/
-├── Domain/
-│   ├── Model/                # Patient, User, Order, Appointment, etc.
-│   ├── Ports/                # IPatientPort, IOrderPort, etc.
-│   └── Services/             # CreatePatient, CreateOrder, etc.
-├── Application/
-│   ├── Adapters/Input/       # AdminInputs, DoctorInputs, Builders, Validators
-│   └── UseCases/             # AdminUseCase, DoctorUseCase, etc.
-├── Infrastructure/
-│   ├── Adapters/Output/Persistence/  # PostgresPatientPort, ClinicaDbContext
-│   └── Config/               # Config, ConfigFactory, AdminConfig, etc.
-├── Migrations/               # Migraciones de Entity Framework
-├── Program.cs                # Punto de entrada
-├── Form1.cs                  # Interfaz de usuario
-└── appsettings.json          # Configuración de conexión a BD
-```
-
-## Tecnologías Utilizadas
-
+**Backend:**
 - **.NET 8.0** - Framework principal
 - **C# 12** - Lenguaje de programación
-- **Windows Forms** - Interfaz gráfica de usuario
+- **ASP.NET Core** - Framework web para API REST
 - **Entity Framework Core 9.0.10** - ORM para acceso a datos
 - **PostgreSQL** - Base de datos relacional
 - **Npgsql 9.0.4** - Proveedor de PostgreSQL para .NET
+- **Swagger/OpenAPI** - Documentación de API
+
+**Frontend:**
+- **Vue.js 3** - Framework JavaScript (Composition API)
+- **Pinia** - State management
+- **Vue Router** - Enrutamiento
+- **Axios** - Cliente HTTP
+- **Tailwind CSS** - Framework de estilos
+- **Vite** - Build tool y dev server
+- **Vue Toastification** - Notificaciones toast
+- **Day.js** - Manejo de fechas
+- **Heroicons** - Iconos
+
+## Estructura del Proyecto
+
+```
+Clinica Herramientas 2/
+├── Domain/                          # Capa de Dominio
+│   ├── Model/                      # Entidades de negocio
+│   │   ├── Patient.cs
+│   │   ├── User.cs
+│   │   ├── Order.cs
+│   │   ├── Appointment.cs
+│   │   ├── MedicalRecord.cs
+│   │   └── ...
+│   ├── Ports/                      # Interfaces (contratos)
+│   │   ├── IPatientPort.cs
+│   │   ├── IOrderPort.cs
+│   │   ├── IAppointmentPort.cs
+│   │   └── ...
+│   └── Services/                    # Lógica de negocio
+│       ├── CreatePatient.cs
+│       ├── CreateOrder.cs
+│       ├── CreateMedicalRecord.cs
+│       └── ...
+│
+├── Application/                     # Capa de Aplicación
+│   ├── Adapters/Input/              # Adaptadores de entrada
+│   │   ├── AdminInputs.cs
+│   │   ├── DoctorInputs.cs
+│   │   ├── Builders/                # Patrón Builder
+│   │   │   ├── PatientBuilder.cs
+│   │   │   ├── OrderBuilder.cs
+│   │   │   └── ...
+│   │   └── Validators/              # Validadores
+│   │       ├── PersonValidator.cs
+│   │       ├── OrderValidator.cs
+│   │       └── ...
+│   └── UseCases/                    # Casos de uso
+│       ├── AdminUseCase.cs
+│       ├── DoctorUseCase.cs
+│       ├── NurseUseCase.cs
+│       └── ...
+│
+├── Infrastructure/                  # Capa de Infraestructura
+│   ├── Adapters/
+│   │   ├── Input/
+│   │   │   └── Controllers/        # Controladores API REST
+│   │   │       ├── Admin/
+│   │   │       ├── Doctor/
+│   │   │       ├── Nurse/
+│   │   │       └── ...
+│   │   └── Output/
+│   │       └── Persistence/        # Persistencia con EF Core
+│   │           ├── ClinicaDbContext.cs
+│   │           ├── PostgresPatientPort.cs
+│   │           ├── PostgresOrderPort.cs
+│   │           └── ...
+│   └── Config/                     # Configuración e inyección de dependencias
+│       ├── ConfigFactory.cs
+│       ├── AdminConfig.cs
+│       ├── DoctorConfig.cs
+│       └── ...
+│
+├── Migrations/                      # Migraciones de Entity Framework
+│   ├── 20251021010542_InitialCreate.cs
+│   └── ...
+│
+├── frontend/                        # Aplicación Frontend Vue.js
+│   ├── src/
+│   │   ├── api/                    # Configuración Axios y endpoints
+│   │   ├── components/             # Componentes Vue
+│   │   │   ├── shared/            # Componentes compartidos
+│   │   │   ├── forms/             # Formularios
+│   │   │   └── layout/           # Layout (Navbar, Sidebar, etc.)
+│   │   ├── views/                 # Vistas por rol
+│   │   │   ├── admin/
+│   │   │   ├── doctor/
+│   │   │   ├── nurse/
+│   │   │   └── ...
+│   │   ├── services/              # Servicios de negocio
+│   │   ├── stores/                # Stores de Pinia
+│   │   ├── router/                # Configuración de rutas
+│   │   ├── composables/           # Composables reutilizables
+│   │   └── utils/                 # Utilidades
+│   ├── package.json
+│   ├── vite.config.js
+│   └── tailwind.config.js
+│
+├── Program.cs                       # Punto de entrada de la aplicación
+├── appsettings.json                # Configuración (cadena de conexión)
+├── Properties/
+│   └── launchSettings.json         # Configuración de ejecución
+└── Clinica Herramientas 2.csproj   # Archivo de proyecto
+```
+
+## Flujo de Datos
+
+### Flujo Completo (Frontend → Backend → Base de Datos)
+
+1. **Frontend (Vue.js)**: Usuario interactúa con la interfaz
+2. **Servicio Frontend**: `doctorService.js`, `adminService.js`, etc. hacen peticiones HTTP
+3. **Axios Interceptor**: Agrega headers de autenticación (`X-User-Dni`, `X-Username`)
+4. **Vite Proxy**: Redirige `/api/*` a `http://localhost:5000`
+5. **Backend Controller**: Recibe la petición HTTP (ej: `OrdersController.cs`)
+6. **Input Adapter**: Valida y construye objetos usando Builders y Validators
+7. **Use Case**: Coordina la operación y valida permisos
+8. **Domain Service**: Ejecuta reglas de negocio
+9. **Port (Interface)**: Define qué operaciones hacer (ej: `IOrderPort`)
+10. **Output Adapter**: Implementa persistencia con EF Core (ej: `PostgresOrderPort`)
+11. **Entity Framework Core**: Genera SQL y ejecuta en PostgreSQL
+12. **PostgreSQL**: Almacena/recupera datos
+13. **Respuesta**: Regresa por el mismo camino hasta el frontend
+14. **Frontend**: Actualiza la UI con los datos recibidos
+
+### Flujo con Error
+
+- Si hay error de validación → Exception en Input Adapter/Validator
+- Si hay error de reglas de negocio → Exception en Domain Service
+- Si hay error de BD → Exception en Postgres Adapter
+- Exception se propaga hacia arriba
+- Axios interceptor captura el error y muestra toast notification
+- Frontend maneja el error específicamente según el caso
+
+## Base de Datos
+
+### PostgreSQL
+
+El sistema utiliza **PostgreSQL** como base de datos relacional. La configuración se encuentra en `appsettings.json`:
+
+```json
+{
+  "ConnectionStrings": {
+    "ClinicaDb": "Host=localhost;Port=5432;Database=clinica_herramientas_2;Username=postgres;Password=tu_password"
+  }
+}
+```
+
+### Configuración de la Base de Datos
+
+**Parámetros de conexión:**
+- **Host**: `localhost` (o la IP del servidor PostgreSQL)
+- **Port**: `5432` (puerto por defecto de PostgreSQL)
+- **Database**: `clinica_herramientas_2`
+- **Username**: Usuario de PostgreSQL (ej: `postgres`)
+- **Password**: Contraseña del usuario
+
+### Migraciones
+
+El proyecto utiliza **Entity Framework Core Migrations** para gestionar el esquema de la base de datos.
+
+**Comandos útiles:**
+
+```bash
+# Crear una nueva migración
+dotnet ef migrations add NombreMigracion
+
+# Aplicar migraciones pendientes
+dotnet ef database update
+
+# Revertir última migración
+dotnet ef database update NombreMigracionAnterior
+
+# Ver estado de migraciones
+dotnet ef migrations list
+```
+
+**Migraciones existentes:**
+- `20251021010542_InitialCreate` - Creación inicial del esquema
+- `20251023002033_SeedInitialRRHHUser` - Usuario inicial de RRHH
+
+### Estructura de Tablas Principales
+
+- **person** - Información personal (base para Patient y User)
+- **patient** - Pacientes con contacto de emergencia y seguro médico
+- **app_user** - Usuarios del sistema con roles
+- **appointment** - Citas médicas
+- **order** - Órdenes médicas
+- **medication_order_item** - Items de medicamentos en órdenes
+- **procedure_order_item** - Items de procedimientos en órdenes
+- **diagnostic_aid_order_item** - Items de ayudas diagnósticas en órdenes
+- **medical_record** - Historiales clínicos
+- **invoice** - Facturas
+- **nurse_visit** - Visitas de enfermería
+- **medication** - Inventario de medicamentos
+- **procedure** - Inventario de procedimientos
+- **diagnostic_aid** - Inventario de ayudas diagnósticas
+
+## Frontend
+
+### Vue.js 3 Application
+
+El frontend está construido con **Vue.js 3** usando la **Composition API** y **Pinia** para el manejo de estado.
+
+### Configuración del Frontend
+
+**Instalación de dependencias:**
+```bash
+cd frontend
+npm install
+```
+
+**Desarrollo:**
+```bash
+npm run dev
+```
+La aplicación estará disponible en `http://localhost:5173`
+
+**Build para producción:**
+```bash
+npm run build
+```
+
+### Configuración de Vite
+
+El archivo `vite.config.js` configura:
+- **Puerto**: `5173` (puerto por defecto de Vite)
+- **Proxy**: Redirige `/api/*` a `http://localhost:5000` (backend)
+
+```javascript
+server: {
+  port: 5173,
+  proxy: {
+    '/api': {
+      target: 'http://localhost:5000',
+      changeOrigin: true
+    }
+  }
+}
+```
+
+### Autenticación en el Frontend
+
+El sistema utiliza autenticación basada en headers:
+
+1. **Login**: El usuario se autentica y se almacena en Pinia store (`auth.js`) y `localStorage`
+2. **Headers automáticos**: En cada petición HTTP, Axios interceptor agrega:
+   - `X-User-Dni`: DNI del usuario autenticado
+   - `X-Username`: Username del usuario autenticado
+3. **Validación en backend**: Los controladores leen estos headers para identificar al usuario
+4. **Manejo de 401**: Si la respuesta es 401, se limpia la autenticación y se redirige a login
+
+### Estructura del Frontend
+
+- **`src/api/`**: Configuración de Axios y definición de endpoints
+- **`src/services/`**: Servicios de negocio que encapsulan llamadas API
+- **`src/stores/`**: Stores de Pinia para manejo de estado global
+- **`src/views/`**: Vistas principales organizadas por rol
+- **`src/components/`**: Componentes reutilizables
+  - **`shared/`**: Componentes compartidos (tablas, modales, etc.)
+  - **`forms/`**: Formularios específicos
+  - **`layout/`**: Componentes de layout (Navbar, Sidebar, Footer)
+- **`src/router/`**: Configuración de rutas con Vue Router
+- **`src/composables/`**: Composables reutilizables (useToast, useDate, etc.)
+- **`src/utils/`**: Utilidades y helpers
+
+### Variables de Entorno (Opcional)
+
+Puedes crear un archivo `.env` en la carpeta `frontend/`:
+
+```env
+VITE_API_BASE_URL=http://localhost:5000/api
+```
+
+Si no se define, el frontend usa `/api` y el proxy de Vite redirige al backend.
 
 ## Configuración y Ejecución
 
-### Requisitos:
-- .NET 8.0 SDK
-- PostgreSQL instalado y corriendo
-- Visual Studio 2022 o superior (recomendado)
+### Requisitos Previos
 
-### Pasos:
-1. Clonar el repositorio
-2. Configurar cadena de conexión en `appsettings.json`:
-   ```json
-   {
-     "ConnectionStrings": {
-       "ClinicaDb": "Host=localhost;Database=clinica;Username=tu_usuario;Password=tu_password"
-     }
-   }
-   ```
-3. Ejecutar migraciones: `dotnet ef database update`
-4. Ejecutar la aplicación: `dotnet run` o F5 en Visual Studio
+**Backend:**
+- .NET 8.0 SDK
+- PostgreSQL 12 o superior instalado y corriendo
+- Visual Studio 2022 o superior (recomendado) o VS Code con extensiones de C#
+
+**Frontend:**
+- Node.js 18 o superior
+- npm o yarn
+
+### Pasos de Instalación
+
+#### 1. Clonar el Repositorio
+```bash
+git clone <url-del-repositorio>
+cd "Clinica Herramientas 2"
+```
+
+#### 2. Configurar Base de Datos
+
+**Crear la base de datos en PostgreSQL:**
+```sql
+CREATE DATABASE clinica_herramientas_2;
+```
+
+**Configurar cadena de conexión en `appsettings.json`:**
+```json
+{
+  "ConnectionStrings": {
+    "ClinicaDb": "Host=localhost;Port=5432;Database=clinica_herramientas_2;Username=postgres;Password=tu_password"
+  }
+}
+```
+
+#### 3. Aplicar Migraciones
+```bash
+dotnet ef database update
+```
+
+#### 4. Instalar Dependencias del Frontend
+```bash
+cd frontend
+npm install
+cd ..
+```
+
+#### 5. Ejecutar la Aplicación
+
+**Terminal 1 - Backend:**
+```bash
+dotnet run
+```
+El backend estará disponible en `http://localhost:5000`
+- Swagger UI: `http://localhost:5000/swagger`
+
+**Terminal 2 - Frontend:**
+```bash
+cd frontend
+npm run dev
+```
+El frontend estará disponible en `http://localhost:5173`
+
+### Verificación
+
+1. Abre `http://localhost:5173` en tu navegador
+2. Deberías ver la pantalla de login
+3. Usa las credenciales del usuario inicial de RRHH (creado en la migración)
+
+## API REST y Swagger
+
+El backend expone una **API REST** documentada con **Swagger/OpenAPI**.
+
+### Acceso a Swagger
+
+Una vez que el backend esté corriendo, accede a:
+```
+http://localhost:5000/swagger
+```
+
+### Endpoints Principales
+
+**Autenticación:**
+- `POST /api/auth/login` - Iniciar sesión
+
+**Admin:**
+- `GET /api/admin/patients` - Listar pacientes
+- `POST /api/admin/patients` - Crear paciente
+- `GET /api/admin/appointments` - Listar citas
+- `POST /api/admin/appointments` - Crear cita
+- `GET /api/admin/invoices` - Listar facturas
+- `POST /api/admin/invoices` - Crear factura
+
+**Doctor:**
+- `GET /api/doctor/orders` - Listar órdenes
+- `POST /api/doctor/orders` - Crear orden
+- `GET /api/doctor/medical-records` - Listar registros médicos
+- `POST /api/doctor/medical-records` - Crear registro médico
+- `GET /api/doctor/appointments/available` - Citas disponibles
+
+**Nurse:**
+- `GET /api/nurse/visits` - Listar visitas
+- `POST /api/nurse/visits` - Crear visita
+
+**RRHH:**
+- `GET /api/rrhh/users` - Listar usuarios
+- `POST /api/rrhh/users` - Crear usuario
+
+**Support:**
+- `GET /api/support/inventory/medications` - Listar medicamentos
+- `POST /api/support/inventory/medications` - Crear medicamento
+
+### CORS
+
+El backend está configurado para aceptar peticiones desde cualquier origen en desarrollo:
+```csharp
+policy.AllowAnyOrigin()
+      .AllowAnyMethod()
+      .AllowAnyHeader();
+```
 
 ## Patrones de Diseño Implementados
 
-- **Hexagonal Architecture** (Ports & Adapters)
+- **Hexagonal Architecture (Ports & Adapters)** - Separación de capas y dependencias
 - **Factory Pattern** - `PortsFactory`, `ConfigFactory`
-- **Builder Pattern** - `PatientBuilder`, `OrderBuilder`, etc.
-- **Repository Pattern** - Ports como repositorios
-- **Dependency Injection** - Configuración en `Config.cs`
+- **Builder Pattern** - `PatientBuilder`, `OrderBuilder`, `MedicalRecordBuilder`, etc.
+- **Repository Pattern** - Ports actúan como repositorios
+- **Dependency Injection** - Configuración completa en `ServiceCollectionExtensions.cs`
+- **Strategy Pattern** - Diferentes estrategias de validación en Validators
 
 ## Modelos Principales
 
 - **Patient**: Información del paciente, contacto de emergencia, seguro médico
-- **User**: Usuarios del sistema con diferentes roles
-- **Appointment**: Citas médicas programadas
-- **Order**: Órdenes médicas con items específicos
-- **MedicalRecord**: Historial clínico de pacientes
-- **Invoice**: Facturación de servicios
+- **User**: Usuarios del sistema con diferentes roles (Admin, Doctor, Nurse, RRHH, Support)
+- **Appointment**: Citas médicas programadas con estado de aceptación
+- **Order**: Órdenes médicas con items específicos (medicamentos, procedimientos, ayudas diagnósticas)
+- **MedicalRecord**: Historial clínico de pacientes con diagnóstico y síntomas
+- **Invoice**: Facturación de servicios con cálculos de copago y seguro
 - **ClinicalResource**: Recursos clínicos (medicamentos, procedimientos, ayudas diagnósticas)
+- **NurseVisit**: Visitas de enfermería con signos vitales y medicamentos administrados
 
 ## Configuración de Roles
 
 El sistema maneja 5 tipos de usuarios con permisos específicos:
 
-1. **AdminConfig**: Acceso completo a gestión de pacientes, citas y facturación
-2. **DoctorConfig**: Creación de órdenes médicas y historiales clínicos
-3. **NurseConfig**: Registro de visitas de enfermería
-4. **RRHHConfig**: Gestión de usuarios del sistema
-5. **SupportConfig**: Administración de inventario de recursos clínicos
+1. **Admin**: Acceso completo a gestión de pacientes, citas y facturación
+2. **Doctor**: Creación de órdenes médicas, historiales clínicos y aceptación de citas
+3. **Nurse**: Registro de visitas de enfermería y atención a pacientes
+4. **RRHH**: Gestión de usuarios del sistema (crear, actualizar, eliminar)
+5. **Support**: Administración de inventario de recursos clínicos
 
-Cada configuración incluye sus respectivos servicios, casos de uso, builders y adaptadores de entrada específicos para su rol.
+Cada rol tiene su propia configuración (`AdminConfig`, `DoctorConfig`, etc.) que incluye:
+- Servicios de dominio específicos
+- Casos de uso
+- Builders y validadores
+- Adaptadores de entrada
+
+## Desarrollo
+
+### Comandos Útiles
+
+**Backend:**
+```bash
+# Compilar
+dotnet build
+
+# Ejecutar
+dotnet run
+
+# Ejecutar con URL específica
+dotnet run --urls "http://localhost:5000"
+
+# Limpiar build
+dotnet clean
+```
+
+**Frontend:**
+```bash
+# Instalar dependencias
+npm install
+
+# Desarrollo
+npm run dev
+
+# Build para producción
+npm run build
+
+# Preview del build
+npm run preview
+```
+
+### Debugging
+
+**Backend:**
+- Usa Visual Studio o VS Code con extensión de C#
+- Los breakpoints funcionan normalmente
+- Swagger permite probar endpoints directamente
+
+**Frontend:**
+- Usa las DevTools del navegador
+- Vue DevTools extension para inspeccionar componentes y estado
+- Network tab para ver peticiones HTTP
+
+## Troubleshooting
+
+### Error: Puerto 5000 ya en uso
+```bash
+# Windows - Encontrar proceso
+netstat -ano | findstr :5000
+
+# Matar proceso (reemplazar PID)
+taskkill /PID <PID> /F
+```
+
+### Error: Base de datos no encontrada
+- Verifica que PostgreSQL esté corriendo
+- Verifica la cadena de conexión en `appsettings.json`
+- Asegúrate de haber creado la base de datos
+
+### Error: Migraciones pendientes
+```bash
+dotnet ef database update
+```
+
+### Frontend no se conecta al backend
+- Verifica que el backend esté corriendo en `http://localhost:5000`
+- Verifica la configuración del proxy en `vite.config.js`
+- Revisa la consola del navegador para errores de CORS
+
+## Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver `LICENSE.txt` para más detalles.
